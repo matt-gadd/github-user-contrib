@@ -1,0 +1,15 @@
+{
+  "name": "contrib-cat",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "license": "ISC",
+  "dependencies": {
+    "bluebird": "^3.0.5",
+    "chalk": "^1.1.1",
+    "lodash": "^3.10.1",
+    "moment": "^2.10.6",
+    "parse-link-header": "^0.4.1",
+    "request": "^2.67.0"
+  }
+}
