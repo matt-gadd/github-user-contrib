@@ -32,7 +32,7 @@ function dumpCache() {
 		});
 	});
 	return Promise.props(cacheDump).then(function (results) {
-		fs.writeFile("cache.json", JSON.stringify(results), function (err) {
+		fs.writeFile("cache.json", JSON.stringify(results, null, "\t"), function (err) {
 			if (err) throw err;
 			console.log('It\'s saved!');
 		});
@@ -50,6 +50,7 @@ function loadCache() {
 function _fetchPullRequests(url, children) {
 	children = children || [];
 	return get(url).spread(function (response, body) {
+		body = _.cloneDeep(body);
 		var links = linkParser(response.headers.link);
 		var items = body.filter(function (item) {
 			return moment(item.created_at).isAfter(cutOffDate);
@@ -65,6 +66,7 @@ function _fetchPullRequests(url, children) {
 function _fetchCommentsForPullRequest(url, children) {
 	children = children || [];
 	return get(url).spread(function (response, body) {
+		body = _.cloneDeep(body);
 		var links = linkParser(response.headers.link);
 		Array.prototype.push.apply(children, body);
 		if (links && links.next) {
@@ -82,7 +84,7 @@ function getPullRequestsForRepos(config) {
 			"org": parts[0],
 			"repo": parts[1],
 			"page": 1,
-			"size": 100
+			"size": 1
 		});
 		return _fetchPullRequests(url);
 	})).then(function (results) {
@@ -143,9 +145,19 @@ function createUsers(prs) {
 }
 
 function runPlugins(users) {
-	var result = {};
+	var result = {
+		users: users
+	};
 	return Promise.each(config.plugins, function(plugin) {
-		return plugin(users, result);
+		return plugin(result);
+	}).then(function () {
+		return result;
+	});
+}
+
+function runReporters(result) {
+	return Promise.each(config.reporters, function(reporter) {
+		return reporter(result);
 	}).then(function () {
 		return result;
 	});
@@ -158,7 +170,5 @@ getPullRequestsForRepos(config)
 	.then(getCommentsOnIssueForPullRequests)
 	.then(createUsers)
 	.then(runPlugins)
-	.then(function (result) {
-		console.log(result);
-	})
+	.then(runReporters)
 	.then(dumpCache);
