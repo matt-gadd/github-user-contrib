@@ -1,0 +1,21 @@
+var score = require("./plugins/score");
+var consoleReporter = require("./reporters/consoleReporter");
+
+module.exports = {
+	apiUrl: "github_url",
+	repos: [
+		"organisation/repo"
+	],
+	plugins: [
+		score({
+			"weighting": {
+				"for": 5,
+				"against": -1
+			}
+		})
+	],
+	reporters: [
+		consoleReporter()
+	],
+	days: 90
+}
