@@ -84,7 +84,7 @@ function getPullRequestsForRepos(config) {
 			"org": parts[0],
 			"repo": parts[1],
 			"page": 1,
-			"size": 1
+			"size": 100
 		});
 		return _fetchPullRequests(url);
 	})).then(function (results) {
