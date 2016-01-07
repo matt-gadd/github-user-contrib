@@ -6,7 +6,7 @@ var Promise = require('bluebird');
 var _ = require("lodash");
 var linkParser = require('parse-link-header');
 var _get = Promise.promisify(request.get, {multiArgs: true});
-var config = require("./.config");
+var config = require("./config");
 
 var cutOffDate = moment().endOf("day").subtract(config.days, "days");
 var getPullsTemplate = _.template("${apiUrl}/repos/${org}/${repo}/pulls?page=${page}&per_page=${size}&state=all");
