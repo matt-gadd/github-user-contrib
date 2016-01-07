@@ -9,7 +9,7 @@ var _get = Promise.promisify(request.get, {multiArgs: true});
 var config = require("./config");
 
 var cutOffDate = moment().endOf("day").subtract(config.days, "days");
-var getPullsTemplate = _.template("${apiUrl}/repos/${org}/${repo}/pulls?page=${page}&per_page=${size}&state=all");
+var getPullsTemplate = _.template("${apiUrl}/repos/${org}/${repo}/pulls?page=${page}&per_page=${size}&state=all&base=integration");
 var cache = {};
 
 function get(url) {
@@ -122,14 +122,17 @@ function createUsers(prs) {
 		var author = pr.user.login;
 		if (!users[author]) {
 			users[author] = {
+				"prs": [],
 				"for": [],
 				"against": []
 			};
 		}
+		users[author].prs.push(pr);
 		pr.comments.forEach(function (comment) {
 			var commenter = comment.user.login;
 			if (!users[commenter]) {
 				users[commenter] = {
+					"prs": [],
 					"for": [],
 					"against": []
 				};
