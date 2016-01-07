@@ -143,10 +143,11 @@ function createUsers(prs) {
 }
 
 function runPlugins(users) {
+	var result = {};
 	return Promise.each(config.plugins, function(plugin) {
-		return plugin(users);
+		return plugin(users, result);
 	}).then(function () {
-		return users;
+		return result;
 	});
 }
 
