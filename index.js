@@ -82,7 +82,7 @@ function getPullRequestsForRepos(config) {
 			"org": parts[0],
 			"repo": parts[1],
 			"page": 1,
-			"size": 10
+			"size": 100
 		});
 		return _fetchPullRequests(url);
 	})).then(function (results) {
@@ -90,11 +90,11 @@ function getPullRequestsForRepos(config) {
 	});
 }
 
-function getCommentsForPullRequests(prs) {
+function getCommentsOnCodeForPullRequests(prs) {
 	var promises = [];
 	prs.forEach(function(pr) {
-		promises.push(_fetchCommentsForPullRequest(pr.comments_url).then(function (comments) {
-			pr.comments = comments;
+		promises.push(_fetchCommentsForPullRequest(pr.review_comments_url).then(function (comments) {
+			pr.comments = pr.comments ? pr.comments.concat(comments) : comments;
 		}));
 	});
 	return Promise.all(promises).then(function () {
@@ -102,8 +102,55 @@ function getCommentsForPullRequests(prs) {
 	});
 }
 
+function getCommentsOnIssueForPullRequests(prs) {
+	var promises = [];
+	prs.forEach(function(pr) {
+		promises.push(_fetchCommentsForPullRequest(pr.comments_url).then(function (comments) {
+			pr.comments = pr.comments ? pr.comments.concat(comments) : comments;
+		}));
+	});
+	return Promise.all(promises).then(function () {
+		return prs;
+	});
+}
+
+function createUsers(prs) {
+	var users = {}
+	prs.forEach(function (pr) {
+		var author = pr.user.login;
+		if (!users[author]) {
+			users[author] = {
+				"for": [],
+				"against": []
+			};
+		}
+		pr.comments.forEach(function (comment) {
+			var commenter = comment.user.login;
+			if (!users[commenter]) {
+				users[commenter] = {
+					"for": [],
+					"against": []
+				};
+			}
+			if (comment.user.login !== author) {
+				users[author].against.push(comment);
+				users[commenter].for.push(comment);
+			}
+		});
+
+	});
+	return users;
+}
+
 
 loadCache();
 getPullRequestsForRepos(config)
-	.then(getCommentsForPullRequests)
+	.then(getCommentsOnCodeForPullRequests)
+	.then(getCommentsOnIssueForPullRequests)
+	.then(createUsers)
+	.then(function (users) {
+		Object.keys(users).forEach(function (username) {
+			console.log("username:", username, "for:", users[username].for.length, "against:", users[username].against.length);
+		});
+	})
 	.then(dumpCache);
