@@ -142,15 +142,22 @@ function createUsers(prs) {
 	return users;
 }
 
+function runPlugins(users) {
+	return Promise.each(config.plugins, function(plugin) {
+		return plugin(users);
+	}).then(function () {
+		return users;
+	});
+}
+
 
 loadCache();
 getPullRequestsForRepos(config)
 	.then(getCommentsOnCodeForPullRequests)
 	.then(getCommentsOnIssueForPullRequests)
 	.then(createUsers)
-	.then(function (users) {
-		Object.keys(users).forEach(function (username) {
-			console.log("username:", username, "for:", users[username].for.length, "against:", users[username].against.length);
-		});
+	.then(runPlugins)
+	.then(function (result) {
+		console.log(result);
 	})
 	.then(dumpCache);
