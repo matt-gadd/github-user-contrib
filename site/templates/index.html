@@ -32,13 +32,13 @@
 					<div class="panel panel-default" id="headings">
 						<div class="panel-heading">Summary</div>
 						<div class="panel-body">
+							<h3>{{ username }}</h3>
 							<div class="grav">
 								<img src="{{ contribs.users[username].gravatar }}" width="230"/>
 							</div>
-							<h3>{{ username }}</h3>
-							<h4>Kudos
-								<span class="label label-primary">{{ contribs.users[username].kudos }}</span>
-							</h4>
+							<div class="kudos">
+								<div class="score">{{ contribs.users[username].kudos }}</div>
+							</div>
 						</div>
 						<ul class="list-group list-group-flush">
 							<li class="list-group-item">Pull Requests made

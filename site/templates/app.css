@@ -27,3 +27,16 @@ li span.label {
 	display: inline-block;
 	width: 50px;
 }
+
+.kudos {
+	text-align: center;
+}
+
+.kudos .score {
+	font-size: 42px;
+	font-weight: bold;
+	color: white;
+	background: #5cb85c;
+	margin-top: 20px;
+}
+
