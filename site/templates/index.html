@@ -69,7 +69,7 @@
 						</div>
 						<div class="panel-body comment-list">
 							{% for comment in  contribs.users[username].for %}
-							<div class="panel panel-default" id="labels">
+							<div class="panel panel-{{ comment.sentiment | sentimentClass }}" id="labels">
 								<div class="panel-heading">
 									<a href="{{ comment.html_url }}">{{ comment.html_url | githubPretty }}</a>
 								</div>

@@ -18,6 +18,19 @@ env.addFilter('githubPretty', function(str, count) {
     return str.replace(/.*?.com\//, "").replace(/#.*/, "");
 });
 
+env.addFilter('sentimentClass', function(str, count) {
+	var val = parseInt(str);
+	var className = "default";
+	if (val < -1) {
+		className = "danger";
+	} else if (val < 0) {
+		className = "warning";
+	} else {
+		className = "success";
+	}
+    return className;
+});
+
 app.use(express.static('./'));
 app.use("/emojify", express.static("../node_modules/emojify.js/dist"));
 
