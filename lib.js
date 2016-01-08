@@ -109,6 +109,8 @@ module.exports = class ContribCat {
 				};
 			}
 			users[author].prs.push(pr);
+			users[author].gravatar = pr.user.avatar_url;
+
 			pr.comments.forEach(function (comment) {
 				var commenter = comment.user.login;
 				if (!users[commenter]) {
@@ -118,6 +120,7 @@ module.exports = class ContribCat {
 						"against": []
 					};
 				}
+
 				if (comment.user.login !== author) {
 					users[author].against.push(comment);
 					users[commenter].for.push(comment);

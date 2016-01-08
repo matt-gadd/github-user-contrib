@@ -17,3 +17,13 @@ div.panel-heading {
 body {
 	padding-bottom: 60px;
 }
+
+.grav {
+	text-align: center;
+}
+
+li span.label {
+	float: right;
+	display: inline-block;
+	width: 50px;
+}
