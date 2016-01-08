@@ -9,7 +9,7 @@ module.exports = function (options) {
 			var user = results.users[username];
 			return {
 				"name": username,
-				"score": user.score,
+				"score": user.kudos,
 				"prs": user.prs.length,
 			};
 		});
