@@ -1,0 +1,42 @@
+div.navbar-inverse {
+	background-color: #2a2c2e;
+	border-bottom-color: #121213;
+}
+
+div.panel-heading {
+	font-size: 14px;
+	font-weight: bold;
+}
+
+.comment-list {
+	overflow-y: auto;
+	overflow-x: hidden;
+	height: 800px;
+}
+
+body {
+	padding-bottom: 60px;
+}
+
+.grav {
+	text-align: center;
+}
+
+li span.label {
+	float: right;
+	display: inline-block;
+	width: 50px;
+}
+
+.kudos {
+	text-align: center;
+}
+
+.kudos .score {
+	font-size: 42px;
+	font-weight: bold;
+	color: white;
+	background: #5cb85c;
+	margin-top: 20px;
+}
+
