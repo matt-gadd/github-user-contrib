@@ -3,17 +3,13 @@
 <html>
 
 	<head>
-		<title>Themestrap Theme Kitchen Sink</title>
+		<title>ContribCat</title>
 		<meta name="viewport" content="width=device-width">
 		<link rel="stylesheet" href="../bootstrap-theme-github/dist/css/bootstrap.css">
 		<link rel="stylesheet" href="./templates/app.css">
+		<link rel="stylesheet" href="./emojify/css/basic/emojify.min.css" />
 		<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/2.0.0/jquery.min.js"></script>
 		<script type="text/javascript" src="https://netdna.bootstrapcdn.com/bootstrap/3.0.0/js/bootstrap.min.js"></script>
-		<style>
-			body {
-				padding-bottom: 60px;
-			}
-		</style>
 	</head>
 
 	<body>
@@ -39,8 +35,8 @@
 						<ul class="list-group list-group-flush">
 							<li class="list-group-item">Pull Requests raised:</li>
 							<li class="list-group-item">Pull Requests merged:</li>
-							<li class="list-group-item">Comments made:</li>
-							<li class="list-group-item">Comments against:</li>
+							<li class="list-group-item">Comments made: {{ contribs.users[username].for.length }}</li>
+							<li class="list-group-item">Comments against: {{ contribs.users[username].against.length }}</li>
 							<li class="list-group-item">Most comfortable Repo:</li>
 							<li class="list-group-item">Least comfortable Repo:</li>
 							<li class="list-group-item">Emoji's used:</li>
@@ -141,16 +137,27 @@
 					<div class="panel panel-default" id="comments">
 						<div class="panel-heading">Your Comments
 						</div>
-						<div class="panel-body">
+						<div class="panel-body comment-list">
+							{% for comment in  contribs.users[username].for %}
 							<div class="panel panel-default" id="labels">
-								<div class="panel-heading">Labels and Badges
+								<div class="panel-heading">{{ comment.html_url }}
 								</div>
 								<div class="panel-body">
+									{{ comment.body }}
 								</div>
 							</div>
+							{% endfor %}
 						</div>
 					</div>
 				</div>
 			</div>
+	</div>
+	<script src="./emojify/js/emojify.js"></script>
+	<script>
+		emojify.setConfig({
+			img_dir: "emojify/images/basic"
+		});
+		emojify.run(document.getElementById("comments"));
+	</script>
 	</body>
 </html>

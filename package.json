@@ -8,6 +8,7 @@
     "bluebird": "^3.0.5",
     "chalk": "^1.1.1",
     "cli-table2": "^0.1.9",
+    "emojify-js": "^0.1.2",
     "express": "^4.13.3",
     "lodash": "^3.10.1",
     "moment": "^2.11.0",

@@ -8,6 +8,11 @@ div.panel-heading {
 	font-weight: bold;
 }
 
-#comments {
+.comment-list {
+	overflow-y: auto;
 	height: 800px;
+}
+
+body {
+	padding-bottom: 60px;
 }
