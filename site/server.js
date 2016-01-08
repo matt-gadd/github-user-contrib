@@ -8,10 +8,14 @@ var contribCat = new ContribCat(config);
 var port = 9000;
 var contibs;
 
-nunjucks.configure("./templates", {
+var env = nunjucks.configure("./templates", {
 	autoescape: true,
 	noCache: true,
 	express: app
+});
+
+env.addFilter('githubPretty', function(str, count) {
+    return str.replace(/.*?.com\//, "").replace(/#.*/, "");
 });
 
 app.use(express.static('./'));
