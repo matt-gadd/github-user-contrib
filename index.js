@@ -2,5 +2,7 @@
 var config = require("./config");
 var ContribCat = require("./lib");
 var contribCat = new ContribCat(config);
-contribCat.run();
+contribCat.run().then(function (results) {
+	console.log(results);
+});
 
