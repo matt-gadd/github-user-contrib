@@ -14,10 +14,12 @@ module.exports = function (options) {
 			user.sentiment = 0;
 
 			user.for.forEach(function (comment) {
-				user.sentiment += analyze(comment.body).score;
+				var sentiment = analyze(comment.body).score;
+				user.sentiment += sentiment;
 				emojify.replace(comment.body, function () {
 					user.emojis += 1;
 				});
+				comment.sentiment = sentiment;
 			});
 			var sentimentScore = user.sentiment * options.weighting.sentiment;
 

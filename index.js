@@ -6,9 +6,8 @@ var contribCat = new ContribCat(config);
 
 mongoose.connect("mongodb://localhost/contribcat");
 
-contribCat.run().then(function (results) {
-	console.log(results);
-}).finally(function () {
-	mongoose.disconnect();
-});
-
+contribCat.run()
+	.then(contribCat.runReporters.bind(contribCat))
+	.finally(function () {
+		mongoose.disconnect();
+	});
