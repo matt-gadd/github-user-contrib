@@ -23,12 +23,14 @@ module.exports = function (options) {
 			return 0;
 		}).reverse();
 
-		users.forEach(function (user) {
-			table.push([
-				user.name,
-				user.score,
-				user.prs
-			]);
+		users.forEach(function (user, i) {
+			if (i < 10) {
+				table.push([
+					user.name,
+					user.score,
+					user.prs
+				]);
+			}
 		});
 		console.log(table.toString());
 		return users;
