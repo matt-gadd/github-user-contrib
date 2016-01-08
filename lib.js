@@ -5,8 +5,13 @@ var moment = require("moment");
 var Promise = require('bluebird');
 var _ = require("lodash");
 var linkParser = require('parse-link-header');
+var mongoose = require('mongoose');
 var _get = Promise.promisify(request.get, {multiArgs: true});
 var get = require("./cache")(_get);
+var PullRequest = require("./models/PullRequest");
+var Comment = require("./models/Comment");
+
+Promise.promisifyAll(mongoose);
 
 module.exports = class ContribCat {
 
@@ -28,32 +33,45 @@ module.exports = class ContribCat {
 		return results;
 	}
 
-	_fetchPullRequests(url, children) {
-		children = children || [];
-		return get(url).spread((response, body) => {
+	_fetchPullRequests(url) {
+		var cutOffDate = this.cutOffDate;
+		return get(url).spread(function (response, body) {
 			body = _.cloneDeep(body);
 			var links = linkParser(response.headers.link);
-			var items = body.filter((item) => {
-				return moment(item.created_at).isAfter(this.cutOffDate);
+
+			var items = body.filter(function (item) {
+				return moment(item.created_at).isAfter(cutOffDate);
 			});
-			Array.prototype.push.apply(children, items);
-			if (links && links.next && items.length === body.length) {
-				return this._fetchPullRequests(links.next.url, children);
-			}
-			return children;
+
+			var promises = [];
+			items.forEach(function(item) {
+				promises.push(PullRequest.createAsync(item).then(function() {}, function() {}));
+			});
+
+			Promise.all(promises).then(function() {
+				if (links && links.next && items.length === body.length) {
+					return this._fetchPullRequests(links.next.url);
+				}
+			}.bind(this));
 		});
 	}
 
-	_fetchCommentsForPullRequest(url, children) {
-		children = children || [];
+	_fetchCommentsForPullRequest(url, pr_url) {
 		return get(url).spread((response, body) => {
-			body = _.cloneDeep(body);
 			var links = linkParser(response.headers.link);
-			Array.prototype.push.apply(children, body);
-			if (links && links.next) {
-				return this._fetchCommentsForPullRequest(links.next.url, children);
-			}
-			return children;
+
+			body = _.cloneDeep(body);
+			body.forEach(function(comment) {
+				if (!comment.pull_request_url) {
+					comment.pull_request_url = pr_url;
+				}
+			});
+
+			return Comment.collection.insertManyAsync(body, { ordered: false }).then(function() {
+				if (links && links.next) {
+					return this._fetchCommentsForPullRequest(links.next.url);
+				}
+			}, function() {});
 		});
 	}
 
@@ -68,17 +86,15 @@ module.exports = class ContribCat {
 				"size": 100
 			});
 			return this._fetchPullRequests(url);
-		})).then(function (results) {
-			return Array.prototype.concat.apply([], results);
+		})).then(function () {
+			return PullRequest.find().lean().execAsync();
 		});
 	}
 
 	getCommentsOnCodeForPullRequests(prs) {
 		var promises = [];
 		prs.forEach((pr) => {
-			promises.push(this._fetchCommentsForPullRequest(pr.review_comments_url).then(function (comments) {
-				pr.comments = pr.comments ? pr.comments.concat(comments) : comments;
-			}));
+			promises.push(this._fetchCommentsForPullRequest(pr.review_comments_url));
 		});
 		return Promise.all(promises).then(function () {
 			return prs;
@@ -88,47 +104,47 @@ module.exports = class ContribCat {
 	getCommentsOnIssueForPullRequests(prs) {
 		var promises = [];
 		prs.forEach((pr) => {
-			promises.push(this._fetchCommentsForPullRequest(pr.comments_url).then(function (comments) {
-				pr.comments = pr.comments ? pr.comments.concat(comments) : comments;
-			}));
+			promises.push(this._fetchCommentsForPullRequest(pr.comments_url, pr.url));
 		});
 		return Promise.all(promises).then(function () {
 			return prs;
 		});
 	}
 
-	createUsers(prs) {
-		var users = {}
-		prs.forEach(function (pr) {
-			var author = pr.user.login;
-			if (!users[author]) {
-				users[author] = {
-					"prs": [],
-					"for": [],
-					"against": []
-				};
-			}
-			users[author].prs.push(pr);
-			users[author].gravatar = pr.user.avatar_url;
-
-			pr.comments.forEach(function (comment) {
-				var commenter = comment.user.login;
-				if (!users[commenter]) {
-					users[commenter] = {
+	createUsers() {
+		var users = {}, commentPromises = [];
+		return PullRequest.findAsync({ created_at: {$gt: this.cutOffDate.toDate()}}).then(function(prs) {
+			prs.forEach(function(pr) {
+				var author = pr.user.login;
+				if (!users[author]) {
+					users[author] = {
 						"prs": [],
 						"for": [],
 						"against": []
 					};
 				}
-
-				if (comment.user.login !== author) {
-					users[author].against.push(comment);
-					users[commenter].for.push(comment);
-				}
+				users[author].prs.push(pr);
+				commentPromises.push(Comment.find({"pull_request_url": pr.url }).lean().execAsync().then(function(comments) {
+					comments.forEach(function (comment) {
+						var commenter = comment.user.login;
+						if (!users[commenter]) {
+							users[commenter] = {
+								"prs": [],
+								"for": [],
+								"against": []
+							};
+						}
+						if (comment.user.login !== author) {
+							users[author].against.push(comment);
+							users[commenter].for.push(comment);
+						}
+					});
+				}));
 			});
-
+			return Promise.all(commentPromises).then(function () {
+				return users;
+			});
 		});
-		return users;
 	}
 
 	runPlugins(users) {
@@ -149,4 +165,4 @@ module.exports = class ContribCat {
 			return result;
 		});
 	}
-}
+};
