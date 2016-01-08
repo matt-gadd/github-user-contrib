@@ -1,0 +1,13 @@
+div.navbar-inverse {
+	background-color: #2a2c2e;
+	border-bottom-color: #121213;
+}
+
+div.panel-heading {
+	font-size: 14px;
+	font-weight: bold;
+}
+
+#comments {
+	height: 800px;
+}

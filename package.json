@@ -8,8 +8,10 @@
     "bluebird": "^3.0.5",
     "chalk": "^1.1.1",
     "cli-table2": "^0.1.9",
+    "express": "^4.13.3",
     "lodash": "^3.10.1",
     "moment": "^2.11.0",
+    "nunjucks": "^2.3.0",
     "parse-link-header": "^0.4.1",
     "request": "^2.67.0"
   }
