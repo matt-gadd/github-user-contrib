@@ -1,0 +1,3 @@
+[submodule "site/bootstrap-theme-github"]
+	path = site/bootstrap-theme-github
+	url = https://github.com/slider23/bootstrap-theme-github.git
