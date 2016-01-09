@@ -7,7 +7,7 @@ var mongoose = require('mongoose');
 var contribCat = new ContribCat(config);
 
 var port = 9000;
-var contibs;
+var contribs;
 
 mongoose.connect("mongodb://localhost/contribcat");
 
