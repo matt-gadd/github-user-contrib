@@ -35,7 +35,7 @@ module.exports = class ContribCat {
 
 	_fetchPullRequests(url) {
 		var cutOffDate = this.cutOffDate;
-		return get(url).spread(function (response, body) {
+		return get(url).spread((response, body) => {
 			body = _.cloneDeep(body);
 			var links = linkParser(response.headers.link);
 
