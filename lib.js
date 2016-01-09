@@ -119,11 +119,11 @@ module.exports = class ContribCat {
 					users[author] = {
 						"prs": [],
 						"for": [],
-						"against": []
+						"against": [],
+						"gravatar": pr.user.avatar_url
 					};
 				}
 				users[author].prs.push(pr);
-				users[author].gravatar = pr.user.avatar_url;
 				commentPromises.push(Comment.find({"pull_request_url": pr.url }).lean().execAsync().then(function(comments) {
 					comments.forEach((comment) => {
 						var commenter = comment.user.login;
@@ -131,7 +131,8 @@ module.exports = class ContribCat {
 							users[commenter] = {
 								"prs": [],
 								"for": [],
-								"against": []
+								"against": [],
+								"gravatar": comment.user.avatar_url
 							};
 						}
 						if (comment.user.login !== author) {
