@@ -34,13 +34,12 @@ module.exports = class ContribCat {
 	}
 
 	_fetchPullRequests(url) {
-		var cutOffDate = this.cutOffDate;
 		return get(url).spread((response, body) => {
 			body = _.cloneDeep(body);
 			var links = linkParser(response.headers.link);
 
 			var items = body.filter((item) => {
-				return moment(item.created_at).isAfter(cutOffDate);
+				return moment(item.created_at).isAfter(this.cutOffDate);
 			});
 
 			var promises = [];
