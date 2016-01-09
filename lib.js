@@ -39,12 +39,12 @@ module.exports = class ContribCat {
 			body = _.cloneDeep(body);
 			var links = linkParser(response.headers.link);
 
-			var items = body.filter(function (item) {
+			var items = body.filter((item) => {
 				return moment(item.created_at).isAfter(cutOffDate);
 			});
 
 			var promises = [];
-			items.forEach(function(item) {
+			items.forEach((item) => {
 				promises.push(PullRequest.createAsync(item).then(function() {}, function() {}));
 			});
 
@@ -61,7 +61,7 @@ module.exports = class ContribCat {
 			var links = linkParser(response.headers.link);
 
 			body = _.cloneDeep(body);
-			body.forEach(function(comment) {
+			body.forEach((comment) => {
 				if (!comment.pull_request_url) {
 					comment.pull_request_url = pr_url;
 				}
@@ -71,7 +71,7 @@ module.exports = class ContribCat {
 				if (links && links.next) {
 					return this._fetchCommentsForPullRequest(links.next.url);
 				}
-			}, function() {});
+			}.bind(this), function() {});
 		});
 	}
 
@@ -114,7 +114,7 @@ module.exports = class ContribCat {
 	createUsers() {
 		var users = {}, commentPromises = [];
 		return PullRequest.findAsync({ created_at: {$gt: this.cutOffDate.toDate()}}).then(function(prs) {
-			prs.forEach(function(pr) {
+			prs.forEach((pr) => {
 				var author = pr.user.login;
 				if (!users[author]) {
 					users[author] = {
@@ -125,7 +125,7 @@ module.exports = class ContribCat {
 				}
 				users[author].prs.push(pr);
 				commentPromises.push(Comment.find({"pull_request_url": pr.url }).lean().execAsync().then(function(comments) {
-					comments.forEach(function (comment) {
+					comments.forEach((comment) => {
 						var commenter = comment.user.login;
 						if (!users[commenter]) {
 							users[commenter] = {
