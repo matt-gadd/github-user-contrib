@@ -123,6 +123,7 @@ module.exports = class ContribCat {
 					};
 				}
 				users[author].prs.push(pr);
+				users[author].gravatar = pr.user.avatar_url;
 				commentPromises.push(Comment.find({"pull_request_url": pr.url }).lean().execAsync().then(function(comments) {
 					comments.forEach((comment) => {
 						var commenter = comment.user.login;
