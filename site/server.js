@@ -3,10 +3,13 @@ var app = express();
 var nunjucks = require("nunjucks");
 var config = require("../config");
 var ContribCat = require("../lib");
+var mongoose = require('mongoose');
 var contribCat = new ContribCat(config);
 
 var port = 9000;
 var contibs;
+
+mongoose.connect("mongodb://localhost/contribcat");
 
 var env = nunjucks.configure("./templates", {
 	autoescape: true,
