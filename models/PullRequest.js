@@ -70,7 +70,7 @@ var schema = new Schema({
 		"repo": {
 			"id": Number,
 			"name": String,
-			"full_name": String,
+			"full_name": {"type": String, "set": function(field) {return field.toLowerCase()}},
 			"owner": {
 				"login": String,
 				"id": Number,
@@ -179,7 +179,7 @@ var schema = new Schema({
 		"repo": {
 			"id": Number,
 			"name": String,
-			"full_name": String,
+			"full_name": {"type": String, "set": function(field) {return field.toLowerCase()}},
 			"owner": {
 				"login": String,
 				"id": Number,
