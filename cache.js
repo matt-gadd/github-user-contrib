@@ -1,15 +1,24 @@
 "use strict";
 var fs = require("fs");
 var Promise = require('bluebird');
+var config = require("./config");
 var cache = {};
 var _get;
 
-function get(url) {
-	if (cache[url]) {
-		return Promise.resolve(cache[url]);
+function _formatRepoName(repo) {
+	return repo.replace("/", "-").toLowerCase();
+}
+
+function get(url, repo) {
+	repo = _formatRepoName(repo);
+	if (cache[repo] && cache[repo][url]) {
+		return Promise.resolve(cache[repo][url]);
 	} else {
+		if (!cache[repo]) {
+			cache[repo] = {};
+		}
 		console.log(url);
-		return cache[url] = _get({
+		return cache[repo][url] = _get({
 			uri: url,
 			json: true
 		});
@@ -17,26 +26,34 @@ function get(url) {
 }
 
 function dump() {
-	var cacheDump = {};
-	Object.keys(cache).forEach(function (url) {
-		cacheDump[url] = Promise.resolve(cache[url]).spread(function (response, body) {
-			return [response, body];
+	Object.keys(cache).forEach((repo) => {
+		var cacheDump = {};
+		Object.keys(cache[repo]).forEach((url) => {
+			if (!cacheDump[repo]) {
+				cacheDump[repo] = {};
+			}
+			cacheDump[repo][url] = Promise.resolve(cache[repo][url]).spread((response, body) => {
+				return [response, body];
+			});
 		});
-	});
-	return Promise.props(cacheDump).then(function (results) {
-		fs.writeFile("cache.json", JSON.stringify(results, null, "\t"), function (err) {
-			if (err) throw err;
-			console.log('It\'s saved!');
+		Promise.props(cacheDump[repo]).then((results) => {
+			fs.writeFile("cache/cache-" + repo + ".json", JSON.stringify(results, null, "\t"), function (err) {
+				if (err) throw err;
+				console.log('cache for repo', repo, 'saved!');
+			});
 		});
 	});
 }
 
 function load() {
-	try {
-		var cacheRaw = fs.readFileSync("cache.json", 'utf8');
-		cache = JSON.parse(cacheRaw);
-	} catch (e) {
-	}
+	config.repos.forEach((repo) => {
+		repo = _formatRepoName(repo);
+		try {
+			var cacheRaw = fs.readFileSync("cache/cache-" + repo + ".json", 'utf8');
+			cache[repo] = JSON.parse(cacheRaw);
+		} catch (e) {
+		}
+	});
 }
 
 module.exports = function (req) {
@@ -45,4 +62,4 @@ module.exports = function (req) {
 	cache.dump = dump;
 	cache.load = load;
 	return cache;
-}
+};
