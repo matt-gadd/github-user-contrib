@@ -47,7 +47,7 @@ module.exports = class ContribCat {
 				promises.push(PullRequest.createAsync(item).then(function() {}, function() {}));
 			});
 
-			Promise.all(promises).then(function() {
+			return Promise.all(promises).then(function() {
 				if (links && links.next && items.length === body.length) {
 					return this._fetchPullRequests(links.next.url);
 				}
@@ -75,6 +75,7 @@ module.exports = class ContribCat {
 	}
 
 	getPullRequestsForRepos() {
+		var query = {"$or": []};
 		return Promise.all(this.config.repos.map((repo) => {
 			var parts = repo.split("/");
 			var url = this.getPullsTemplate({
@@ -84,10 +85,12 @@ module.exports = class ContribCat {
 				"page": 1,
 				"size": 100
 			});
+			query.$or.push({"base.repo.full_name": repo.toLowerCase()});
 			return this._fetchPullRequests(url);
 		})).then(function () {
-			return PullRequest.find().lean().execAsync();
-		});
+			query.created_at = {$gt: this.cutOffDate.toDate()};
+			return PullRequest.find(query).lean().execAsync();
+		}.bind(this));
 	}
 
 	getCommentsOnCodeForPullRequests(prs) {
