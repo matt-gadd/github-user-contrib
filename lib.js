@@ -24,8 +24,8 @@ module.exports = class ContribCat {
 	run() {
 		get.load();
 		var results = this.getPullRequestsForRepos(this.config)
-			.then(this.getCommentsOnCodeForPullRequests.bind(this))
-			.then(this.getCommentsOnIssueForPullRequests.bind(this))
+			.then(this.getCommentsOnCodeForPullRequestsBatch.bind(this))
+			.then(this.getCommentsOnIssueForPullRequestsBatch.bind(this))
 			.then(this.createUsers.bind(this))
 			.then(this.runPlugins.bind(this));
 
@@ -103,12 +103,44 @@ module.exports = class ContribCat {
 		});
 	}
 
+	getCommentsOnCodeForPullRequestsBatch(prs) {
+		var chunkedArray = _.chunk(prs, 10);
+		var first = chunkedArray.shift();
+
+		var finish = chunkedArray.reduce((defPrevious, current, currentIndex) => {
+			return defPrevious.then(() => {
+				console.log("Processing Pull Requests Comments batch", currentIndex + 1, "of", chunkedArray.length);
+				return this.getCommentsOnCodeForPullRequests(current);
+			});
+		}, this.getCommentsOnCodeForPullRequests(first));
+
+		return finish.then(() => {
+			return prs;
+		});
+	}
+
 	getCommentsOnIssueForPullRequests(prs) {
 		var promises = [];
 		prs.forEach((pr) => {
 			promises.push(this._fetchCommentsForPullRequest(pr.comments_url, pr.url, pr.base.repo.full_name));
 		});
 		return Promise.all(promises).then(function () {
+			return prs;
+		});
+	}
+
+	getCommentsOnIssueForPullRequestsBatch(prs) {
+		var chunkedArray = _.chunk(prs, 10);
+		var first = chunkedArray.shift();
+
+		var finish = chunkedArray.reduce((defPrevious, current, currentIndex) => {
+			return defPrevious.then(() => {
+				console.log("Processing Issue Comments batch", currentIndex + 1, "of", chunkedArray.length);
+				return this.getCommentsOnIssueForPullRequests(current);
+			});
+		}, this.getCommentsOnIssueForPullRequests(first));
+
+		return finish.then(() => {
 			return prs;
 		});
 	}
