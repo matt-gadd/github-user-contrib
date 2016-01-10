@@ -36,7 +36,7 @@ function dump() {
 				return [response, body];
 			});
 		});
-		Promise.props(cacheDump[repo]).then((results) => {
+		return Promise.props(cacheDump[repo]).then((results) => {
 			fs.writeFile("cache/cache-" + repo + ".json", JSON.stringify(results, null, "\t"), function (err) {
 				if (err) throw err;
 				console.log('cache for repo', repo, 'saved!');
