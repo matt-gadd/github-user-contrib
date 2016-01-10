@@ -28,9 +28,9 @@ module.exports = class ContribCat {
 		return results;
 	}
 
-	_fetchPullRequests(url, children) {
+	_fetchPullRequests(url, repo, children) {
 		children = children || [];
-		return get(url).spread((response, body) => {
+		return get(url, repo).spread((response, body) => {
 			body = _.cloneDeep(body);
 			var links = linkParser(response.headers.link);
 			var items = body.filter((item) => {
@@ -38,20 +38,20 @@ module.exports = class ContribCat {
 			});
 			Array.prototype.push.apply(children, items);
 			if (links && links.next && items.length === body.length) {
-				return this._fetchPullRequests(links.next.url, children);
+				return this._fetchPullRequests(links.next.url, repo, children);
 			}
 			return children;
 		});
 	}
 
-	_fetchCommentsForPullRequest(url, children) {
+	_fetchCommentsForPullRequest(url, repo, children) {
 		children = children || [];
-		return get(url).spread((response, body) => {
+		return get(url, repo).spread((response, body) => {
 			body = _.cloneDeep(body);
 			var links = linkParser(response.headers.link);
 			Array.prototype.push.apply(children, body);
 			if (links && links.next) {
-				return this._fetchCommentsForPullRequest(links.next.url, children);
+				return this._fetchCommentsForPullRequest(links.next.url, repo, children);
 			}
 			return children;
 		});
@@ -67,7 +67,7 @@ module.exports = class ContribCat {
 				"page": 1,
 				"size": 100
 			});
-			return this._fetchPullRequests(url);
+			return this._fetchPullRequests(url, repo);
 		})).then(function (results) {
 			return Array.prototype.concat.apply([], results);
 		});
@@ -76,7 +76,7 @@ module.exports = class ContribCat {
 	getCommentsOnCodeForPullRequests(prs) {
 		var promises = [];
 		prs.forEach((pr) => {
-			promises.push(this._fetchCommentsForPullRequest(pr.review_comments_url).then(function (comments) {
+			promises.push(this._fetchCommentsForPullRequest(pr.review_comments_url, pr.base.repo.full_name).then(function (comments) {
 				pr.comments = pr.comments ? pr.comments.concat(comments) : comments;
 			}));
 		});
@@ -88,7 +88,7 @@ module.exports = class ContribCat {
 	getCommentsOnIssueForPullRequests(prs) {
 		var promises = [];
 		prs.forEach((pr) => {
-			promises.push(this._fetchCommentsForPullRequest(pr.comments_url).then(function (comments) {
+			promises.push(this._fetchCommentsForPullRequest(pr.comments_url, pr.base.repo.full_name).then(function (comments) {
 				pr.comments = pr.comments ? pr.comments.concat(comments) : comments;
 			}));
 		});
@@ -98,7 +98,7 @@ module.exports = class ContribCat {
 	}
 
 	createUsers(prs) {
-		var users = {}
+		var users = {};
 		prs.forEach(function (pr) {
 			var author = pr.user.login;
 			if (!users[author]) {
