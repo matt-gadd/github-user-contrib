@@ -33,8 +33,8 @@ module.exports = class ContribCat {
 		return results;
 	}
 
-	_fetchPullRequests(url) {
-		return get(url).spread((response, body) => {
+	_fetchPullRequests(url, repo) {
+		return get(url, repo).spread((response, body) => {
 			body = _.cloneDeep(body);
 			var links = linkParser(response.headers.link);
 
@@ -49,14 +49,14 @@ module.exports = class ContribCat {
 
 			return Promise.all(promises).then(function() {
 				if (links && links.next && items.length === body.length) {
-					return this._fetchPullRequests(links.next.url);
+					return this._fetchPullRequests(links.next.url, repo);
 				}
 			}.bind(this));
 		});
 	}
 
-	_fetchCommentsForPullRequest(url, pr_url) {
-		return get(url).spread((response, body) => {
+	_fetchCommentsForPullRequest(url, pr_url, repo) {
+		return get(url, repo).spread((response, body) => {
 			var links = linkParser(response.headers.link);
 
 			body = _.cloneDeep(body);
@@ -68,7 +68,7 @@ module.exports = class ContribCat {
 
 			return Comment.collection.insertManyAsync(body, { ordered: false }).then(function() {
 				if (links && links.next) {
-					return this._fetchCommentsForPullRequest(links.next.url);
+					return this._fetchCommentsForPullRequest(links.next.url, repo);
 				}
 			}.bind(this), function() {});
 		});
@@ -86,7 +86,7 @@ module.exports = class ContribCat {
 				"size": 100
 			});
 			query.$or.push({"base.repo.full_name": repo.toLowerCase()});
-			return this._fetchPullRequests(url);
+			return this._fetchPullRequests(url, repo);
 		})).then(function () {
 			query.created_at = {$gt: this.cutOffDate.toDate()};
 			return PullRequest.find(query).lean().execAsync();
@@ -96,7 +96,7 @@ module.exports = class ContribCat {
 	getCommentsOnCodeForPullRequests(prs) {
 		var promises = [];
 		prs.forEach((pr) => {
-			promises.push(this._fetchCommentsForPullRequest(pr.review_comments_url));
+			promises.push(this._fetchCommentsForPullRequest(pr.review_comments_url, pr.url, pr.base.repo.full_name));
 		});
 		return Promise.all(promises).then(function () {
 			return prs;
@@ -106,7 +106,7 @@ module.exports = class ContribCat {
 	getCommentsOnIssueForPullRequests(prs) {
 		var promises = [];
 		prs.forEach((pr) => {
-			promises.push(this._fetchCommentsForPullRequest(pr.comments_url, pr.url));
+			promises.push(this._fetchCommentsForPullRequest(pr.comments_url, pr.url, pr.base.repo.full_name));
 		});
 		return Promise.all(promises).then(function () {
 			return prs;
