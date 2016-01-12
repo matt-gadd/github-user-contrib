@@ -74,7 +74,7 @@ module.exports = class ContribCat {
 
 			return Comment.collection.insertManyAsync(body, { ordered: false }).reflect().then(() => {
 				if (links && links.next) {
-					return this._fetchCommentsForPullRequest(links.next.url, repo);
+					return this._fetchCommentsForPullRequest(links.next.url, pr_url, repo);
 				}
 			});
 		});
@@ -100,7 +100,7 @@ module.exports = class ContribCat {
 	}
 
 	getCommentsOnCodeForPullRequests(prs) {
-		Promise.map(prs, (pr) => {
+		return Promise.map(prs, (pr) => {
 			return this._fetchCommentsForPullRequest(pr.review_comments_url, pr.url, pr.base.repo.full_name);
 		}).then(() => {
 			return prs;
@@ -149,36 +149,35 @@ module.exports = class ContribCat {
 
 	createUsers() {
 		var users = {};
-		return PullRequest.findAsync({ created_at: {$gt: this.cutOffDate.toDate()}}).then((prs) => {
-			prs.forEach((pr) => {
-				var author = pr.user.login;
-				if (!users[author]) {
-					users[author] = {
-						"name": author.toLowerCase(),
+		return PullRequest.findAsync({ created_at: {$gt: this.cutOffDate.toDate()}}).map((pr) => {
+			var author = pr.user.login;
+			if (!users[author]) {
+				users[author] = {
+					"name": author.toLowerCase(),
+					"prs": [],
+					"for": [],
+					"against": [],
+					"gravatar": pr.user.avatar_url
+				};
+			}
+			users[author].prs.push(pr);
+			return Comment.find({"pull_request_url": pr.url }).lean().execAsync().map((comment) => {
+				var commenter = comment.user.login;
+				if (!users[commenter]) {
+					users[commenter] = {
+						"name": commenter.toLowerCase(),
 						"prs": [],
 						"for": [],
 						"against": [],
-						"gravatar": pr.user.avatar_url
+						"gravatar": comment.user.avatar_url
 					};
 				}
-				users[author].prs.push(pr);
-				Comment.find({"pull_request_url": pr.url }).lean().execAsync().map((comment) => {
-					var commenter = comment.user.login;
-					if (!users[commenter]) {
-						users[commenter] = {
-							"name": commenter.toLowerCase(),
-							"prs": [],
-							"for": [],
-							"against": [],
-							"gravatar": comment.user.avatar_url
-						};
-					}
-					if (comment.user.login !== author) {
-						users[author].against.push(comment);
-						users[commenter].for.push(comment);
-					}
-				});
+				if (comment.user.login !== author) {
+					users[author].against.push(comment);
+					users[commenter].for.push(comment);
+				}
 			});
+		}).then(() => {
 			return users;
 		});
 	}
@@ -192,7 +191,7 @@ module.exports = class ContribCat {
 	}
 
 	saveUsers(users) {
-		Promise.map(Object.keys(users), (username) => {
+		return Promise.map(Object.keys(users), (username) => {
 			return User.findOneAndUpdate({"name": username}, users[username], {"upsert": true, "new": true}).execAsync()
 				.reflect().then((body) => {
 					return body._doc
