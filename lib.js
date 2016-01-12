@@ -42,16 +42,13 @@ module.exports = class ContribCat {
 				return moment(item.created_at).isAfter(this.cutOffDate);
 			});
 
-			var promises = [];
-			items.forEach((item) => {
-				promises.push(PullRequest.createAsync(item).then(function() {}, function() {}));
-			});
-
-			return Promise.all(promises).then(function() {
+			Promise.map(items, (item) => {
+				return PullRequest.createAsync(item).reflect();
+			}).then(() => {
 				if (links && links.next && items.length === body.length) {
 					return this._fetchPullRequests(links.next.url, repo);
 				}
-			}.bind(this));
+			});
 		});
 	}
 
@@ -66,11 +63,11 @@ module.exports = class ContribCat {
 				}
 			});
 
-			return Comment.collection.insertManyAsync(body, { ordered: false }).then(function() {
+			return Comment.collection.insertManyAsync(body, { ordered: false }).reflect().then(() => {
 				if (links && links.next) {
 					return this._fetchCommentsForPullRequest(links.next.url, repo);
 				}
-			}.bind(this), function() {});
+			});
 		});
 	}
 
@@ -87,18 +84,16 @@ module.exports = class ContribCat {
 			});
 			query.$or.push({"base.repo.full_name": repo.toLowerCase()});
 			return this._fetchPullRequests(url, repo);
-		})).then(function () {
+		})).then(() => {
 			query.created_at = {$gt: this.cutOffDate.toDate()};
 			return PullRequest.find(query).lean().execAsync();
-		}.bind(this));
+		});
 	}
 
 	getCommentsOnCodeForPullRequests(prs) {
-		var promises = [];
-		prs.forEach((pr) => {
-			promises.push(this._fetchCommentsForPullRequest(pr.review_comments_url, pr.url, pr.base.repo.full_name));
-		});
-		return Promise.all(promises).then(function () {
+		Promise.map(prs, (pr) => {
+			return this._fetchCommentsForPullRequest(pr.review_comments_url, pr.url, pr.base.repo.full_name);
+		}).then(() => {
 			return prs;
 		});
 	}
@@ -120,11 +115,9 @@ module.exports = class ContribCat {
 	}
 
 	getCommentsOnIssueForPullRequests(prs) {
-		var promises = [];
-		prs.forEach((pr) => {
-			promises.push(this._fetchCommentsForPullRequest(pr.comments_url, pr.url, pr.base.repo.full_name));
-		});
-		return Promise.all(promises).then(function () {
+		Promise.map(prs, (pr) => {
+			return this._fetchCommentsForPullRequest(pr.comments_url, pr.url, pr.base.repo.full_name)
+		}).then(() => {
 			return prs;
 		});
 	}
@@ -146,8 +139,8 @@ module.exports = class ContribCat {
 	}
 
 	createUsers() {
-		var users = {}, commentPromises = [];
-		return PullRequest.findAsync({ created_at: {$gt: this.cutOffDate.toDate()}}).then(function(prs) {
+		var users = {};
+		return PullRequest.findAsync({ created_at: {$gt: this.cutOffDate.toDate()}}).then((prs) => {
 			prs.forEach((pr) => {
 				var author = pr.user.login;
 				if (!users[author]) {
@@ -159,27 +152,23 @@ module.exports = class ContribCat {
 					};
 				}
 				users[author].prs.push(pr);
-				commentPromises.push(Comment.find({"pull_request_url": pr.url }).lean().execAsync().then(function(comments) {
-					comments.forEach((comment) => {
-						var commenter = comment.user.login;
-						if (!users[commenter]) {
-							users[commenter] = {
-								"prs": [],
-								"for": [],
-								"against": [],
-								"gravatar": comment.user.avatar_url
-							};
-						}
-						if (comment.user.login !== author) {
-							users[author].against.push(comment);
-							users[commenter].for.push(comment);
-						}
-					});
-				}));
+				Comment.find({"pull_request_url": pr.url }).lean().execAsync().map((comment) => {
+					var commenter = comment.user.login;
+					if (!users[commenter]) {
+						users[commenter] = {
+							"prs": [],
+							"for": [],
+							"against": [],
+							"gravatar": comment.user.avatar_url
+						};
+					}
+					if (comment.user.login !== author) {
+						users[author].against.push(comment);
+						users[commenter].for.push(comment);
+					}
+				});
 			});
-			return Promise.all(commentPromises).then(function () {
-				return users;
-			});
+			return users;
 		});
 	}
 
@@ -187,17 +176,17 @@ module.exports = class ContribCat {
 		var result = {
 			users: users
 		};
-		return Promise.each(this.config.plugins, function(plugin) {
+		return Promise.each(this.config.plugins, (plugin) => {
 			return plugin(result);
-		}).then(function () {
+		}).then(() => {
 			return result;
 		});
 	}
 
 	runReporters(result) {
-		return Promise.each(this.config.reporters, function(reporter) {
+		return Promise.each(this.config.reporters, (reporter) => {
 			return reporter(result);
-		}).then(function () {
+		}).then(() => {
 			return result;
 		});
 	}
