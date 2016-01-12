@@ -306,4 +306,5 @@ var PullRequest = mongoose.model("PullRequest", schema);
 Promise.promisifyAll(PullRequest);
 Promise.promisifyAll(PullRequest.prototype);
 
-module.exports = PullRequest;
+module.exports.PullRequest = PullRequest;
+module.exports.schema = schema;

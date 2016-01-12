@@ -1,0 +1,63 @@
+<!doctype html>
+
+<html>
+
+<head>
+	<title>ContribCat</title>
+	<meta name="viewport" content="width=device-width">
+	<link rel="stylesheet" href="../bootstrap-theme-github/dist/css/bootstrap.css">
+	<link rel="stylesheet" href="./templates/app.css">
+	<link rel="stylesheet" href="./emojify/css/basic/emojify.min.css"/>
+	<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/2.0.0/jquery.min.js"></script>
+	<script type="text/javascript" src="https://netdna.bootstrapcdn.com/bootstrap/3.0.0/js/bootstrap.min.js"></script>
+</head>
+
+<body>
+<div class="navbar navbar-static-top navbar-inverse">
+	<div class="container">
+		<div class="navbar-header">
+			<button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".header-collapse">
+				<span class="sr-only">Toggle navigation</span>
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+			</button>
+			<a class="navbar-brand" href="#">ContribCat</a>
+		</div>
+	</div>
+</div>
+<div class="container">
+	<div class="row">
+		<div class="col-lg-12">
+			<div class="panel panel-default" id="headings">
+				<div class="panel-heading">Overview</div>
+				<table class="table table-fixedheader table-striped table-bordered table-condensed">
+					<thead>
+					<tr>
+						<th class="name">Name</th>
+						<th>Pull Request Count</th>
+						<th>Average Comments</th>
+						<th>Comments Made</th>
+						<th>Comments Received</th>
+						<th>Kudos</th>
+					</tr>
+					</thead>
+					<tbody>
+					{% for user in users %}
+					<tr>
+						<td class="name"><a href="/user/{{ user.name }}">{{ user.name }}</a></td>
+						<td >{{ user.prs.length }}</td>
+						<td >{{ user.averageCommentsPerPr }}</td>
+						<td >{{ user.for.length }}</td>
+						<td >{{ user.against.length }}</td>
+						<td >{{ user.kudos }}</td>
+					</tr>
+					{% endfor %}
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+</div>
+</body>
+</html>
