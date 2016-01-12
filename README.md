@@ -1,3 +1,3 @@
-# github-user-contrib
+# contrib-cat
 
 github user contribution stats.

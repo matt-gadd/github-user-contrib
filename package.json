@@ -14,6 +14,7 @@
     "express": "^4.13.3",
     "lodash": "^3.10.1",
     "moment": "^2.11.0",
+    "mongoose": "^4.3.4",
     "nunjucks": "^2.3.0",
     "parse-link-header": "^0.4.1",
     "request": "^2.67.0"
