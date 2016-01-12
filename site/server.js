@@ -7,10 +7,6 @@ var mongoose = require('mongoose');
 var contribCat = new ContribCat(config);
 
 var port = 9000;
-var contribs;
-
-mongoose.connect("mongodb://localhost/contribcat");
-
 var env = nunjucks.configure("./templates", {
 	autoescape: true,
 	noCache: true,
@@ -40,15 +36,32 @@ app.use("/emojify", express.static("../node_modules/emojify.js/dist"));
 app.engine("html", nunjucks.render);
 app.set("view engine", "html");
 
-app.get("/:username", function(req, res) {
-	res.render('index.html', {
-		username : req.params.username,
-		contribs: contribs
-  });
+app.get("/user/:username", (req, res) => {
+	contribCat.getUser(req.params.username).then(contribCat.runPlugins.bind(contribCat)).then((results) => {
+		res.render('index.html', {
+			user: results.users[0]
+		});
+	});
 });
 
-contribCat.run().then(function (results) {
-	contribs = results;
-	app.listen(port);
+app.get("/overview", (req, res) => {
+	contribCat.run().then((results) => {
+		results.users.sort(function (a, b) {
+			if (a.kudos > b.kudos) {
+				return 1;
+			}
+			if (a.kudos < b.kudos) {
+				return -1;
+			}
+			return 0;
+		}).reverse();
+		res.render('overview.html', {
+			users: results.users
+		});
+	});
+});
+
+app.listen(port, () => {
 	console.log("Listening on port %s...", port);
 });
+

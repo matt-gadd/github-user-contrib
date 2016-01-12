@@ -40,3 +40,49 @@ li span.label {
 	margin-top: 20px;
 }
 
+/*
+Fixed table header styles
+*/
+table.table-fixedheader {
+	width: 100%;
+}
+
+table.table-fixedheader, table.table-fixedheader>thead, table.table-fixedheader>tbody, table.table-fixedheader>thead>tr, table.table-fixedheader>tbody>tr, table.table-fixedheader>thead>tr>th, table.table-fixedheader>tbody>td {
+	display: block;
+}
+table.table-fixedheader>thead>tr:after, table.table-fixedheader>tbody>tr:after {
+	content:' ';
+	display: block;
+	visibility: hidden;
+	clear: both;
+}
+
+table.table-fixedheader>tbody {
+	overflow-y: scroll;
+	height: 800px;
+}
+
+table.table-fixedheader>thead {
+	overflow-y: scroll;
+}
+
+table.table-fixedheader>thead::-webkit-scrollbar {
+	background-color: inherit;
+}
+
+table.table-fixedheader>thead>tr>th:after, table.table-fixedheader>tbody>tr>td:after {
+	content:' ';
+	display: table-cell;
+	visibility: hidden;
+	clear: both;
+}
+
+table.table-fixedheader>thead tr th, table.table-fixedheader>tbody tr td {
+	width: 16%;
+	float: left;
+	word-wrap:break-word;
+}
+
+table.table-fixedheader>tbody tr td.name, table.table-fixedheader>thead tr th.name {
+	width: 20%;
+}

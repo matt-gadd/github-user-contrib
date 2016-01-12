@@ -6,8 +6,8 @@
 		<title>github-user-contrib</title>
 		<meta name="viewport" content="width=device-width">
 		<link rel="stylesheet" href="../bootstrap-theme-github/dist/css/bootstrap.css">
-		<link rel="stylesheet" href="./templates/app.css">
-		<link rel="stylesheet" href="./emojify/css/basic/emojify.min.css" />
+		<link rel="stylesheet" href="../templates/app.css">
+		<link rel="stylesheet" href="../emojify/css/basic/emojify.min.css" />
 		<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/2.0.0/jquery.min.js"></script>
 		<script type="text/javascript" src="https://netdna.bootstrapcdn.com/bootstrap/3.0.0/js/bootstrap.min.js"></script>
 	</head>
@@ -22,7 +22,7 @@
 						<span class="icon-bar"></span>
 						<span class="icon-bar"></span>
 					</button>
-					<a class="navbar-brand" href="#">ContribCat</a>
+					<a class="navbar-brand" href="/overview">ContribCat</a>
 				</div>
 			</div>
 		</div>
@@ -32,29 +32,32 @@
 					<div class="panel panel-default" id="headings">
 						<div class="panel-heading">Summary</div>
 						<div class="panel-body">
-							<h3>{{ username }}</h3>
+							<h3>{{ user.name }}</h3>
 							<div class="grav">
-								<img src="{{ contribs.users[username].gravatar }}" width="230"/>
+								<img src="{{ user.gravatar }}" width="230"/>
 							</div>
 							<div class="kudos">
-								<div class="score">{{ contribs.users[username].kudos }}</div>
+								<div class="score">{{ user.kudos }}</div>
 							</div>
 						</div>
 						<ul class="list-group list-group-flush">
 							<li class="list-group-item">Pull Requests made
-								<span class="label label-primary">{{ contribs.users[username].prs.length }}</span>
+								<span class="label label-primary">{{ user.prs.length }}</span>
 							</li>
 							<li class="list-group-item">Comments made
-								<span class="label label-primary">{{ contribs.users[username].for.length }}</span>
+								<span class="label label-primary">{{ user.for.length }}</span>
 							</li>
 							<li class="list-group-item">Comments against
-								<span class="label label-primary">{{ contribs.users[username].against.length }}</span>
+								<span class="label label-primary">{{ user.against.length }}</span>
+							</li>
+							<li class="list-group-item">Average comments per PR
+								<span class="label label-primary">{{ user.averageCommentsPerPr }}</span>
 							</li>
 							<li class="list-group-item">Emoji's used
-								<span class="label label-primary">{{ contribs.users[username].emojis }}</span>
+								<span class="label label-primary">{{ user.emojis }}</span>
 							</li>
 							<li class="list-group-item">Sentiment
-								<span class="label label-primary">{{ contribs.users[username].sentiment }}</span>
+								<span class="label label-primary">{{ user.sentiment }}</span>
 							</li>
 							<li class="list-group-item">Most comfortable Repo
 							</li>
@@ -68,7 +71,7 @@
 						<div class="panel-heading">Your Comments
 						</div>
 						<div class="panel-body comment-list">
-							{% for comment in  contribs.users[username].for %}
+							{% for comment in  user.for %}
 							<div class="panel panel-{{ comment.sentiment | sentimentClass }}" id="labels">
 								<div class="panel-heading">
 									<a href="{{ comment.html_url }}">{{ comment.html_url | githubPretty }}</a>
@@ -83,10 +86,10 @@
 				</div>
 			</div>
 	</div>
-	<script src="./emojify/js/emojify.js"></script>
+	<script src="../emojify/js/emojify.js"></script>
 	<script>
 		emojify.setConfig({
-			img_dir: "emojify/images/basic"
+			img_dir: "../emojify/images/basic"
 		});
 		emojify.run(document.getElementById("comments"));
 	</script>

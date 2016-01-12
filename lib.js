@@ -8,10 +8,13 @@ var linkParser = require('parse-link-header');
 var mongoose = require('mongoose');
 var _get = Promise.promisify(request.get, {multiArgs: true});
 var get = require("./cache")(_get);
-var PullRequest = require("./models/PullRequest");
+var PullRequest = require("./models/PullRequest").PullRequest;
 var Comment = require("./models/Comment");
+var User = require("./models/User");
 
 Promise.promisifyAll(mongoose);
+
+mongoose.connect("mongodb://localhost/contribcat", { keepAlive: 120 });
 
 module.exports = class ContribCat {
 
@@ -21,16 +24,22 @@ module.exports = class ContribCat {
 		this.cutOffDate = moment().endOf("day").subtract(this.config.days, "days");
 	}
 
-	run() {
+	load() {
 		get.load();
 		var results = this.getPullRequestsForRepos(this.config)
 			.then(this.getCommentsOnCodeForPullRequestsBatch.bind(this))
-			.then(this.getCommentsOnIssueForPullRequestsBatch.bind(this))
-			.then(this.createUsers.bind(this))
-			.then(this.runPlugins.bind(this));
+			.then(this.getCommentsOnIssueForPullRequestsBatch.bind(this));
 
 		results.then(get.dump);
 		return results;
+	}
+
+	sync() {
+		return this.createUsers().then(this.saveUsers.bind(this));
+	}
+
+	run() {
+		return this.getUsers().then(this.runPlugins.bind(this));
 	}
 
 	_fetchPullRequests(url, repo) {
@@ -145,6 +154,7 @@ module.exports = class ContribCat {
 				var author = pr.user.login;
 				if (!users[author]) {
 					users[author] = {
+						"name": author.toLowerCase(),
 						"prs": [],
 						"for": [],
 						"against": [],
@@ -156,6 +166,7 @@ module.exports = class ContribCat {
 					var commenter = comment.user.login;
 					if (!users[commenter]) {
 						users[commenter] = {
+							"name": commenter.toLowerCase(),
 							"prs": [],
 							"for": [],
 							"against": [],
@@ -169,6 +180,23 @@ module.exports = class ContribCat {
 				});
 			});
 			return users;
+		});
+	}
+
+	getUsers() {
+		return User.find().lean().execAsync();
+	}
+
+	getUser(username) {
+		return User.find({"name": username.toLowerCase()}).lean().execAsync();
+	}
+
+	saveUsers(users) {
+		Promise.map(Object.keys(users), (username) => {
+			return User.findOneAndUpdate({"name": username}, users[username], {"upsert": true, "new": true}).execAsync()
+				.reflect().then((body) => {
+					return body._doc
+				})
 		});
 	}
 

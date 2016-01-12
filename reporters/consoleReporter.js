@@ -5,12 +5,11 @@ module.exports = function (options) {
 		var table = new Table({
 			head: ['User', "Score", "Pull Requests"]
 		});
-		var users = Object.keys(results.users).map(function (username) {
-			var user = results.users[username];
+		var users = results.users.map(function (user) {
 			return {
-				"name": username,
+				"name": user.name,
 				"score": user.kudos,
-				"prs": user.prs.length,
+				"prs": user.prs.length
 			};
 		});
 		users.sort(function (a, b) {
