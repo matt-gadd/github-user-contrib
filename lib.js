@@ -124,7 +124,7 @@ module.exports = class ContribCat {
 	}
 
 	getCommentsOnIssueForPullRequests(prs) {
-		Promise.map(prs, (pr) => {
+		return Promise.map(prs, (pr) => {
 			return this._fetchCommentsForPullRequest(pr.comments_url, pr.url, pr.base.repo.full_name)
 		}).then(() => {
 			return prs;
