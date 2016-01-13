@@ -214,6 +214,7 @@ module.exports = class ContribCat {
 
 	runPlugins(users) {
 		var result = {
+			startDate: moment().endOf("day").subtract(this.config.days, "days"),
 			users: users
 		};
 		return Promise.each(this.config.plugins, (plugin) => {
