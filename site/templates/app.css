@@ -40,6 +40,10 @@ li span.label {
 	margin-top: 20px;
 }
 
+.created-at {
+	float: right;
+}
+
 /*
 Fixed table header styles
 */

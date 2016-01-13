@@ -21,6 +21,7 @@ module.exports = class ContribCat {
 	constructor(config) {
 		this.config = config;
 		this.getPullsTemplate = _.template("${apiUrl}/repos/${org}/${repo}/pulls?page=${page}&per_page=${size}&state=all&base=integration");
+		this.getUserTemplate = _.template("${apiUrl}/users/${username}");
 		this.cutOffDate = moment().endOf("day").subtract(this.config.days, "days");
 	}
 
@@ -35,7 +36,9 @@ module.exports = class ContribCat {
 	}
 
 	sync() {
-		return this.createUsers().then(this.saveUsers.bind(this));
+		return this.createUsers()
+			.then(this.fetchUserDetails.bind(this))
+			.then(this.saveUsers.bind(this));
 	}
 
 	run() {
@@ -188,6 +191,16 @@ module.exports = class ContribCat {
 
 	getUser(username) {
 		return User.find({"name": username.toLowerCase()}).lean().execAsync();
+	}
+
+	fetchUserDetails(users) {
+		return Promise.map(Object.keys(users), (username) => {
+			var user = users[username];
+			return get(this.getUserTemplate({"username": username, "apiUrl": this.config.apiUrl}), "user").spread((response, body) => {
+				user.details = body;
+				return user;
+			});
+		});
 	}
 
 	saveUsers(users) {

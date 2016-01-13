@@ -5,6 +5,7 @@ var Schema = mongoose.Schema;
 var User = mongoose.model("User", new Schema({
 	"name": {"type": String, unique : true, required : true, lowercase: true},
 	"gravatar": String,
+	"details": {},
 	"prs": [],
 	"against": [],
 	"for": []

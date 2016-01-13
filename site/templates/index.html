@@ -32,7 +32,7 @@
 					<div class="panel panel-default" id="headings">
 						<div class="panel-heading">Summary</div>
 						<div class="panel-body">
-							<h3>{{ user.name }}</h3>
+							<h3>{{ user.details.name }}</h3>
 							<div class="grav">
 								<img src="{{ user.gravatar }}" width="230"/>
 							</div>
@@ -41,6 +41,9 @@
 							</div>
 						</div>
 						<ul class="list-group list-group-flush">
+							<li class="list-group-item">Joined
+								<span class="created-at">{{ user.details.created_at | formatDate }}</span>
+							</li>
 							<li class="list-group-item">Pull Requests made
 								<span class="label label-primary">{{ user.prs.length }}</span>
 							</li>

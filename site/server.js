@@ -4,6 +4,7 @@ var nunjucks = require("nunjucks");
 var config = require("../config");
 var ContribCat = require("../lib");
 var mongoose = require('mongoose');
+var moment = require("moment");
 var contribCat = new ContribCat(config);
 
 var port = 9000;
@@ -28,6 +29,10 @@ env.addFilter('sentimentClass', function(str, count) {
 		className = "success";
 	}
     return className;
+});
+
+env.addFilter("formatDate", function (str) {
+	return moment(str).format('DD/MM/YYYY');
 });
 
 app.use(express.static('./'));
