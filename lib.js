@@ -20,7 +20,7 @@ module.exports = class ContribCat {
 
 	constructor(config) {
 		this.config = config;
-		this.getPullsTemplate = _.template("${apiUrl}/repos/${org}/${repo}/pulls?page=${page}&per_page=${size}&state=all&base=integration");
+		this.getPullsTemplate = _.template("${apiUrl}/repos/${org}/${repo}/pulls?page=${page}&per_page=${size}&state=all&base=${head}");
 		this.cutOffDate = moment().endOf("day").subtract(this.config.days, "days");
 	}
 
@@ -51,7 +51,7 @@ module.exports = class ContribCat {
 				return moment(item.created_at).isAfter(this.cutOffDate);
 			});
 
-			Promise.map(items, (item) => {
+			return Promise.map(items, (item) => {
 				return PullRequest.createAsync(item).reflect();
 			}).then(() => {
 				if (links && links.next && items.length === body.length) {
@@ -82,12 +82,15 @@ module.exports = class ContribCat {
 
 	getPullRequestsForRepos() {
 		var query = {"$or": []};
-		return Promise.all(this.config.repos.map((repo) => {
-			var parts = repo.split("/");
+		return Promise.all(this.config.repos.map((target) => {
+			var parts = target.split(":");
+			var head = parts[1];
+			var repo = parts[0];
 			var url = this.getPullsTemplate({
 				"apiUrl": this.config.apiUrl,
-				"org": parts[0],
-				"repo": parts[1],
+				"org": repo.split("/")[0],
+				"repo": repo.split("/")[1],
+				"head": head || this.config.defaultBranch,
 				"page": 1,
 				"size": 100
 			});

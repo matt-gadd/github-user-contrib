@@ -3,8 +3,9 @@ var consoleReporter = require("./reporters/consoleReporter");
 
 module.exports = {
 	apiUrl: "github_url",
+	defaultBranch: "master",
 	repos: [
-		"organisation/repo"
+		"organisation/repo:branch"
 	],
 	plugins: [
 		score({

@@ -6,7 +6,7 @@ var cache = {};
 var _get;
 
 function _formatRepoName(repo) {
-	return repo.replace("/", "-").toLowerCase();
+	return repo.split(":")[0].replace("/", "-").toLowerCase();
 }
 
 function get(url, repo) {
