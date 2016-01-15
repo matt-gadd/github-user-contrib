@@ -186,7 +186,7 @@ module.exports = class ContribCat {
 	}
 
 	getUsers() {
-		return User.find().lean().execAsync();
+		return User.find().populate("for against", "path body").lean().execAsync();
 	}
 
 	getUser(username) {
