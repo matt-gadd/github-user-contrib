@@ -1,7 +1,10 @@
 "use strict";
 
 module.exports = function (options) {
-	var regExp = new RegExp(["buildbot test build"].join("|"), "i");
+	var regExp;
+	options = options || {};
+	options.excludes = options.excludes || [];
+	regExp = new RegExp(options.excludes.join("|"), "i");
 	return function (results) {
 		results.users.forEach(function (user) {
 			user.for = user.for.filter(function (comment) {

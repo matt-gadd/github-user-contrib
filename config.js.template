@@ -13,6 +13,9 @@ module.exports = {
 		"organisation/repo:branch"
 	],
 	plugins: [
+		filter({
+			excludes: ["exclude regex"]
+		}),
 		score({
 			"weighting": {
 				"for": {
