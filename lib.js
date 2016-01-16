@@ -19,7 +19,7 @@ module.exports = class ContribCat {
 
 	constructor(config) {
 		this.config = config;
-		this.getPullsTemplate = _.template("${apiUrl}/repos/${org}/${repo}/pulls?page=${page}&per_page=${size}&state=all&base=${head}");
+		this.getPullsTemplate = _.template("${apiUrl}/repos/${org}/${repo}/pulls?page=${page}&per_page=${size}&state=all&base=${head}&sort=updated&direction=desc");
 		this.cutOffDate = moment().endOf("day").subtract(this.config.syncDays, "days");
 		mongoose.connect(connectionTemplate(this.config.store), { keepAlive: 120 });
 	}
@@ -48,11 +48,11 @@ module.exports = class ContribCat {
 			var links = linkParser(response.headers.link);
 
 			var items = body.filter((item) => {
-				return moment(item.created_at).isAfter(this.cutOffDate);
+				return moment(item.updated_at).isAfter(this.cutOffDate);
 			});
 
 			return Promise.map(items, (item) => {
-				return PullRequest.createAsync(item).reflect();
+				return PullRequest.findOneAndUpdate({"url": item.url}, item, {"upsert": true}).execAsync().reflect();
 			}).then(() => {
 				if (links && links.next && items.length === body.length) {
 					return this._fetchPullRequests(links.next.url, repo);
@@ -99,7 +99,7 @@ module.exports = class ContribCat {
 			query.$or.push({"base.repo.full_name": repo.toLowerCase()});
 			return this._fetchPullRequests(url, repo);
 		})).then(() => {
-			query.created_at = {$gt: this.cutOffDate.toDate()};
+			query.updated_at = {$gt: this.cutOffDate.toDate()};
 			return PullRequest.find(query).lean().execAsync();
 		});
 	}
@@ -155,7 +155,7 @@ module.exports = class ContribCat {
 	createUsers() {
 		return User.find().lean().execAsync().then((users) => {
 			users = _.keyBy(users, 'name');
-			return PullRequest.findAsync({ created_at: {$gt: this.cutOffDate.toDate()}}).map((pr) => {
+			return PullRequest.findAsync({ updated_at: {$gt: this.cutOffDate.toDate()}}).map((pr) => {
 				var author = pr.user.login;
 				if (!users[author]) {
 					users[author] = {
@@ -199,10 +199,12 @@ module.exports = class ContribCat {
 	}
 
 	getUserStatistics(days, username) {
-		var since = moment().endOf("day").subtract(days || this.config.reportDays, "days");
-		console.log(since.format());
-		var sinceQuery = { created_at: { $gt: since.toDate() }};
-		var userQuery = {};
+		var userQuery = {},
+			sinceQuery = {
+				updated_at: {
+					$gt: moment().endOf("day").subtract(days || this.config.reportDays, "days").toDate()
+				}
+			};
 		if (username) {
 			userQuery.name = username.toLowerCase();
 		}
@@ -210,8 +212,7 @@ module.exports = class ContribCat {
 		return User.find(userQuery)
 			.populate({
 				path: 'prs',
-				match: sinceQuery,
-				select: 'created_at'})
+				match: sinceQuery})
 			.populate({
 				path: 'for against',
 				match: sinceQuery,
