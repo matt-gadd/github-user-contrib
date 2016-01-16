@@ -1,5 +1,5 @@
 var mongoose = require('mongoose');
-var PullRequest = require('./models/PullRequest').PullRequest;
+var PullRequest = require('./../models/PullRequest').PullRequest;
 var moment = require("moment");
 var Promise = require('bluebird');
 var stats = require("stats-lite");
