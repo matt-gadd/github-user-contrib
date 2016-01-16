@@ -15,8 +15,8 @@ var Comment = mongoose.model("Comment", new Schema({
 	"line": Number,
 	"path": String,
 	"commit_id": String,
-	"created_at": String,
-	"updated_at": String,
+	"created_at": Date,
+	"updated_at": Date,
 	"body": String
 }));
 

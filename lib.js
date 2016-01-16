@@ -11,35 +11,35 @@ var get = require("./cache")(_get);
 var PullRequest = require("./models/PullRequest").PullRequest;
 var Comment = require("./models/Comment");
 var User = require("./models/User");
+var connectionTemplate = _.template("mongodb://${url}/${db}");
 
 Promise.promisifyAll(mongoose);
-
-mongoose.connect("mongodb://localhost/contribcat", { keepAlive: 120 });
 
 module.exports = class ContribCat {
 
 	constructor(config) {
 		this.config = config;
 		this.getPullsTemplate = _.template("${apiUrl}/repos/${org}/${repo}/pulls?page=${page}&per_page=${size}&state=all&base=${head}");
-		this.cutOffDate = moment().endOf("day").subtract(this.config.days, "days");
+		this.cutOffDate = moment().endOf("day").subtract(this.config.syncDays, "days");
+		mongoose.connect(connectionTemplate(this.config.store), { keepAlive: 120 });
 	}
 
 	load() {
-		get.load();
+		if (this.config.caching) {
+			get.load();
+		}
 		var results = this.getPullRequestsForRepos(this.config)
 			.then(this.getCommentsOnCodeForPullRequestsBatch.bind(this))
 			.then(this.getCommentsOnIssueForPullRequestsBatch.bind(this));
 
-		results.then(get.dump);
+		if (this.config.caching) {
+			results.then(get.dump);
+		}
 		return results;
 	}
 
 	sync() {
 		return this.createUsers().then(this.saveUsers.bind(this));
-	}
-
-	run() {
-		return this.getUsers().then(this.runPlugins.bind(this));
 	}
 
 	_fetchPullRequests(url, repo) {
@@ -72,7 +72,9 @@ module.exports = class ContribCat {
 				}
 			});
 
-			return Comment.collection.insertManyAsync(body, { ordered: false }).reflect().then(() => {
+			return Promise.map(body, (item) => {
+				return Comment.createAsync(item).reflect();
+			}).then(() => {
 				if (links && links.next) {
 					return this._fetchCommentsForPullRequest(links.next.url, pr_url, repo);
 				}
@@ -92,7 +94,7 @@ module.exports = class ContribCat {
 				"repo": repo.split("/")[1],
 				"head": head || this.config.defaultBranch,
 				"page": 1,
-				"size": 100
+				"size": this.config.pageSize
 			});
 			query.$or.push({"base.repo.full_name": repo.toLowerCase()});
 			return this._fetchPullRequests(url, repo);
@@ -151,46 +153,74 @@ module.exports = class ContribCat {
 	}
 
 	createUsers() {
-		var users = {};
-		return PullRequest.findAsync({ created_at: {$gt: this.cutOffDate.toDate()}}).map((pr) => {
-			var author = pr.user.login;
-			if (!users[author]) {
-				users[author] = {
-					"name": author.toLowerCase(),
-					"prs": [],
-					"for": [],
-					"against": [],
-					"gravatar": pr.user.avatar_url
-				};
-			}
-			users[author].prs.push(pr);
-			return Comment.find({"pull_request_url": pr.url }).lean().execAsync().map((comment) => {
-				var commenter = comment.user.login;
-				if (!users[commenter]) {
-					users[commenter] = {
-						"name": commenter.toLowerCase(),
+		return User.find().lean().execAsync().then((users) => {
+			users = _.keyBy(users, 'name');
+			return PullRequest.findAsync({ created_at: {$gt: this.cutOffDate.toDate()}}).map((pr) => {
+				var author = pr.user.login;
+				if (!users[author]) {
+					users[author] = {
+						"name": author.toLowerCase(),
 						"prs": [],
 						"for": [],
 						"against": [],
-						"gravatar": comment.user.avatar_url
+						"gravatar": pr.user.avatar_url
 					};
 				}
-				if (comment.user.login !== author) {
-					users[author].against.push(comment);
-					users[commenter].for.push(comment);
+
+				if (_.findIndex(users[author].prs, function(o) {return pr._id.equals(o);}) === -1) {
+					users[author].prs.push(pr);
+					console.log("add PR");
 				}
+
+				return Comment.find({"pull_request_url": pr.url }).lean().execAsync().map((comment) => {
+					var commenter = comment.user.login;
+					if (!users[commenter]) {
+						users[commenter] = {
+							"name": commenter.toLowerCase(),
+							"prs": [],
+							"for": [],
+							"against": [],
+							"gravatar": comment.user.avatar_url
+						};
+					}
+					if (comment.user.login !== author) {
+						if (_.findIndex(users[author].against, function(o) {return comment._id.equals(o);}) === -1) {
+							console.log("add against comment");
+							users[author].against.push(comment);
+						}
+
+						if (_.findIndex(users[commenter].for, function(o) {return comment._id.equals(o);}) === -1) {
+							console.log("add for comment");
+							users[commenter].for.push(comment);
+						}
+					}
+				});
+			}).then(() => {
+				return users;
 			});
-		}).then(() => {
-			return users;
 		});
 	}
 
-	getUsers() {
-		return User.find().populate("for against", "path body").lean().execAsync();
-	}
+	getUserStatistics(days, username) {
+		var since = moment().endOf("day").subtract(days || this.config.reportDays, "days");
+		console.log(since.format());
+		var sinceQuery = { created_at: { $gt: since.toDate() }};
+		var userQuery = {};
+		if (username) {
+			userQuery.name = username.toLowerCase();
+		}
 
-	getUser(username) {
-		return User.find({"name": username.toLowerCase()}).lean().execAsync();
+		return User.find(userQuery)
+			.populate({
+				path: 'prs',
+				match: sinceQuery,
+				select: 'created_at'})
+			.populate({
+				path: 'for against',
+				match: sinceQuery,
+				select: 'path body html_url'})
+			.lean()
+			.execAsync();
 	}
 
 	saveUsers(users) {
