@@ -37,7 +37,7 @@ app.engine("html", nunjucks.render);
 app.set("view engine", "html");
 
 app.get("/user/:username", (req, res) => {
-	contribCat.getUser(req.params.username).then(contribCat.runPlugins.bind(contribCat)).then((results) => {
+	contribCat.getUserStatistics(req.query.days, req.params.username).then(contribCat.runPlugins.bind(contribCat)).then((results) => {
 		res.render('index.html', {
 			user: results.users[0]
 		});
@@ -45,7 +45,9 @@ app.get("/user/:username", (req, res) => {
 });
 
 app.get("/overview", (req, res) => {
-	contribCat.run().then((results) => {
+	contribCat.getUserStatistics(req.query.days)
+		.then(contribCat.runPlugins.bind(contribCat))
+		.then((results) => {
 		results.users.sort(function (a, b) {
 			if (a.kudos > b.kudos) {
 				return 1;
