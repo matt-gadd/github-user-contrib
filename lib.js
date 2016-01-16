@@ -169,7 +169,6 @@ module.exports = class ContribCat {
 
 				if (_.findIndex(users[author].prs, function(o) {return pr._id.equals(o);}) === -1) {
 					users[author].prs.push(pr);
-					console.log("add PR");
 				}
 
 				return Comment.find({"pull_request_url": pr.url }).lean().execAsync().map((comment) => {
@@ -185,12 +184,10 @@ module.exports = class ContribCat {
 					}
 					if (comment.user.login !== author) {
 						if (_.findIndex(users[author].against, function(o) {return comment._id.equals(o);}) === -1) {
-							console.log("add against comment");
 							users[author].against.push(comment);
 						}
 
 						if (_.findIndex(users[commenter].for, function(o) {return comment._id.equals(o);}) === -1) {
-							console.log("add for comment");
 							users[commenter].for.push(comment);
 						}
 					}
