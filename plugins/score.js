@@ -56,7 +56,7 @@ module.exports = function (options) {
 				var average = user.kudos/(365 - days);
 				user.partial = true;
 				user.originalKudos = user.kudos;
-				user.kudos += Math.round(average * 365);
+				user.kudos = Math.round(average * 365);
 			}
 
 		});
