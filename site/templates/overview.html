@@ -50,7 +50,7 @@
 						<td >{{ user.averageCommentsPerPr }}</td>
 						<td >{{ user.for.length }}</td>
 						<td >{{ user.against.length }}</td>
-						<td >{{ user.kudos }}</td>
+						<td >{{ user.kudos }} {% if user.partial %} (projected) {% endif %}</td>
 					</tr>
 					{% endfor %}
 					</tbody>

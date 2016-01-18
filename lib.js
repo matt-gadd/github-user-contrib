@@ -19,6 +19,7 @@ module.exports = class ContribCat {
 
 	constructor(config) {
 		this.config = config;
+		this.getUserTemplate = _.template("${apiUrl}/users/${username}");
 		this.getPullsTemplate = _.template("${apiUrl}/repos/${org}/${repo}/pulls?page=${page}&per_page=${size}&state=all&base=${head}&sort=updated&direction=desc");
 		this.cutOffDate = moment().endOf("day").subtract(this.config.syncDays, "days");
 		mongoose.connect(connectionTemplate(this.config.store), { keepAlive: 120 });
@@ -39,7 +40,9 @@ module.exports = class ContribCat {
 	}
 
 	sync() {
-		return this.createUsers().then(this.saveUsers.bind(this));
+		return this.createUsers()
+			.then(this.fetchUserDetails.bind(this))
+			.then(this.saveUsers.bind(this));
 	}
 
 	_fetchPullRequests(url, repo) {
@@ -221,6 +224,16 @@ module.exports = class ContribCat {
 			.execAsync();
 	}
 
+	fetchUserDetails(users) {
+		return Promise.map(Object.keys(users), (username) => {
+			var user = users[username];
+			return get(this.getUserTemplate({"username": username, "apiUrl": this.config.apiUrl}), "user").spread((response, body) => {
+				user.details = body;
+				return user;
+			});
+		});
+	}
+
 	saveUsers(users) {
 		return Promise.map(Object.keys(users), (username) => {
 			return User.findOneAndUpdate({"name": username}, users[username], {"upsert": true, "new": true}).execAsync()
@@ -232,6 +245,7 @@ module.exports = class ContribCat {
 
 	runPlugins(users) {
 		var result = {
+			startDate: moment().endOf("day").subtract(this.config.days, "days"),
 			users: users
 		};
 		return Promise.each(this.config.plugins, (plugin) => {

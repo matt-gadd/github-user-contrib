@@ -1,5 +1,6 @@
 var analyze = require('Sentimental').analyze;
 var emojify = require("emojify.js");
+var moment = require("moment");
 
 module.exports = function (options) {
 	return function (results) {
@@ -46,6 +47,18 @@ module.exports = function (options) {
 			user.kudos = user.score + sentimentScore + prScore;
 			user.averageCommentsPerPr = Math.ceil(averageCommentsPerPr);
 			user.averageCommentsPerPrForSort = averageCommentsPerPr;
+
+			var created = moment(user.details.created_at);
+			var after = created.isAfter(results.startDate);
+
+			if (after) {
+				var months = created.diff(results.startDate, "months");
+				var average = user.kudos/months;
+				user.partial = true;
+				user.originalKudos = user.kudos;
+				user.kudos += average * months;
+			}
+
 		});
 		return results;
 	};
