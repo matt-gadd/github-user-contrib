@@ -48,15 +48,15 @@ module.exports = function (options) {
 			user.averageCommentsPerPr = Math.ceil(averageCommentsPerPr);
 			user.averageCommentsPerPrForSort = averageCommentsPerPr;
 
-			var created = moment(user.details.created_at);
+			var created = moment(user.details.created_at).endOf("day");
 			var after = created.isAfter(results.startDate);
 
 			if (after) {
-				var months = created.diff(results.startDate, "months");
-				var average = user.kudos/months;
+				var days = created.diff(results.startDate, "days");
+				var average = user.kudos/(365 - days);
 				user.partial = true;
 				user.originalKudos = user.kudos;
-				user.kudos += average * months;
+				user.kudos += Math.round(average * 365);
 			}
 
 		});
