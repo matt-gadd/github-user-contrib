@@ -6,9 +6,9 @@ var User = mongoose.model("User", new Schema({
 	"name": {"type": String, unique : true, required : true, lowercase: true},
 	"gravatar": String,
 	"details": {},
-	"prs": [],
-	"against": [],
-	"for": []
+	"prs": [{type: mongoose.Schema.Types.ObjectId, ref: "PullRequest"}],
+	"against": [{type: mongoose.Schema.Types.ObjectId, ref: "Comment"}],
+	"for": [{type: mongoose.Schema.Types.ObjectId, ref: "Comment"}]
 }));
 
 Promise.promisifyAll(User);

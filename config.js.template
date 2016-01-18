@@ -3,19 +3,38 @@ var consoleReporter = require("./reporters/consoleReporter");
 
 module.exports = {
 	apiUrl: "github_url",
+	defaultBranch: "master",
+	store: {
+		url: "localhost",
+		db: "contribcat"
+	},
+	caching: true,
 	repos: [
-		"organisation/repo"
+		"organisation/repo:branch"
 	],
 	plugins: [
+		filter({
+			excludes: ["exclude regex"]
+		}),
 		score({
 			"weighting": {
-				"for": 5,
-				"against": -1
+				"for": {
+					"issue": 3,
+					"diff": 5
+				},
+				"against": {
+					"issue": 1,
+					"diff": 2
+				},
+				"sentiment": 1,
+				"pr": 10
 			}
 		})
 	],
 	reporters: [
 		consoleReporter()
 	],
-	days: 90
-}
+	pageSize: 20,
+	syncDays: 90,
+	reportDays: 365
+};

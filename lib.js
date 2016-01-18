@@ -11,27 +11,31 @@ var get = require("./cache")(_get);
 var PullRequest = require("./models/PullRequest").PullRequest;
 var Comment = require("./models/Comment");
 var User = require("./models/User");
+var connectionTemplate = _.template("mongodb://${url}/${db}");
 
 Promise.promisifyAll(mongoose);
-
-mongoose.connect("mongodb://localhost/contribcat", { keepAlive: 120 });
 
 module.exports = class ContribCat {
 
 	constructor(config) {
 		this.config = config;
-		this.getPullsTemplate = _.template("${apiUrl}/repos/${org}/${repo}/pulls?page=${page}&per_page=${size}&state=all&base=integration");
 		this.getUserTemplate = _.template("${apiUrl}/users/${username}");
-		this.cutOffDate = moment().endOf("day").subtract(this.config.days, "days");
+		this.getPullsTemplate = _.template("${apiUrl}/repos/${org}/${repo}/pulls?page=${page}&per_page=${size}&state=all&base=${head}&sort=updated&direction=desc");
+		this.cutOffDate = moment().endOf("day").subtract(this.config.syncDays, "days");
+		mongoose.connect(connectionTemplate(this.config.store), { keepAlive: 120 });
 	}
 
 	load() {
-		get.load();
+		if (this.config.caching) {
+			get.load();
+		}
 		var results = this.getPullRequestsForRepos(this.config)
 			.then(this.getCommentsOnCodeForPullRequestsBatch.bind(this))
 			.then(this.getCommentsOnIssueForPullRequestsBatch.bind(this));
 
-		results.then(get.dump);
+		if (this.config.caching) {
+			results.then(get.dump);
+		}
 		return results;
 	}
 
@@ -41,21 +45,17 @@ module.exports = class ContribCat {
 			.then(this.saveUsers.bind(this));
 	}
 
-	run() {
-		return this.getUsers().then(this.runPlugins.bind(this));
-	}
-
 	_fetchPullRequests(url, repo) {
 		return get(url, repo).spread((response, body) => {
 			body = _.cloneDeep(body);
 			var links = linkParser(response.headers.link);
 
 			var items = body.filter((item) => {
-				return moment(item.created_at).isAfter(this.cutOffDate);
+				return moment(item.updated_at).isAfter(this.cutOffDate);
 			});
 
-			Promise.map(items, (item) => {
-				return PullRequest.createAsync(item).reflect();
+			return Promise.map(items, (item) => {
+				return PullRequest.findOneAndUpdate({"url": item.url}, item, {"upsert": true}).execAsync().reflect();
 			}).then(() => {
 				if (links && links.next && items.length === body.length) {
 					return this._fetchPullRequests(links.next.url, repo);
@@ -75,7 +75,9 @@ module.exports = class ContribCat {
 				}
 			});
 
-			return Comment.collection.insertManyAsync(body, { ordered: false }).reflect().then(() => {
+			return Promise.map(body, (item) => {
+				return Comment.createAsync(item).reflect();
+			}).then(() => {
 				if (links && links.next) {
 					return this._fetchCommentsForPullRequest(links.next.url, pr_url, repo);
 				}
@@ -85,19 +87,22 @@ module.exports = class ContribCat {
 
 	getPullRequestsForRepos() {
 		var query = {"$or": []};
-		return Promise.all(this.config.repos.map((repo) => {
-			var parts = repo.split("/");
+		return Promise.all(this.config.repos.map((target) => {
+			var parts = target.split(":");
+			var head = parts[1];
+			var repo = parts[0];
 			var url = this.getPullsTemplate({
 				"apiUrl": this.config.apiUrl,
-				"org": parts[0],
-				"repo": parts[1],
+				"org": repo.split("/")[0],
+				"repo": repo.split("/")[1],
+				"head": head || this.config.defaultBranch,
 				"page": 1,
-				"size": 100
+				"size": this.config.pageSize
 			});
 			query.$or.push({"base.repo.full_name": repo.toLowerCase()});
 			return this._fetchPullRequests(url, repo);
 		})).then(() => {
-			query.created_at = {$gt: this.cutOffDate.toDate()};
+			query.updated_at = {$gt: this.cutOffDate.toDate()};
 			return PullRequest.find(query).lean().execAsync();
 		});
 	}
@@ -127,7 +132,7 @@ module.exports = class ContribCat {
 	}
 
 	getCommentsOnIssueForPullRequests(prs) {
-		Promise.map(prs, (pr) => {
+		return Promise.map(prs, (pr) => {
 			return this._fetchCommentsForPullRequest(pr.comments_url, pr.url, pr.base.repo.full_name)
 		}).then(() => {
 			return prs;
@@ -151,46 +156,72 @@ module.exports = class ContribCat {
 	}
 
 	createUsers() {
-		var users = {};
-		return PullRequest.findAsync({ created_at: {$gt: this.cutOffDate.toDate()}}).map((pr) => {
-			var author = pr.user.login;
-			if (!users[author]) {
-				users[author] = {
-					"name": author.toLowerCase(),
-					"prs": [],
-					"for": [],
-					"against": [],
-					"gravatar": pr.user.avatar_url
-				};
-			}
-			users[author].prs.push(pr);
-			return Comment.find({"pull_request_url": pr.url }).lean().execAsync().map((comment) => {
-				var commenter = comment.user.login;
-				if (!users[commenter]) {
-					users[commenter] = {
-						"name": commenter.toLowerCase(),
+		return User.find().lean().execAsync().then((users) => {
+			users = _.keyBy(users, 'name');
+			return PullRequest.findAsync({ updated_at: {$gt: this.cutOffDate.toDate()}}).map((pr) => {
+				var author = pr.user.login;
+				if (!users[author]) {
+					users[author] = {
+						"name": author.toLowerCase(),
 						"prs": [],
 						"for": [],
 						"against": [],
-						"gravatar": comment.user.avatar_url
+						"gravatar": pr.user.avatar_url
 					};
 				}
-				if (comment.user.login !== author) {
-					users[author].against.push(comment);
-					users[commenter].for.push(comment);
+
+				if (_.findIndex(users[author].prs, function(o) {return pr._id.equals(o);}) === -1) {
+					users[author].prs.push(pr);
 				}
+
+				return Comment.find({"pull_request_url": pr.url }).lean().execAsync().map((comment) => {
+					var commenter = comment.user.login;
+					if (!users[commenter]) {
+						users[commenter] = {
+							"name": commenter.toLowerCase(),
+							"prs": [],
+							"for": [],
+							"against": [],
+							"gravatar": comment.user.avatar_url
+						};
+					}
+					if (comment.user.login !== author) {
+						if (_.findIndex(users[author].against, function(o) {return comment._id.equals(o);}) === -1) {
+							users[author].against.push(comment);
+						}
+
+						if (_.findIndex(users[commenter].for, function(o) {return comment._id.equals(o);}) === -1) {
+							users[commenter].for.push(comment);
+						}
+					}
+				});
+			}).then(() => {
+				return users;
 			});
-		}).then(() => {
-			return users;
 		});
 	}
 
-	getUsers() {
-		return User.find().lean().execAsync();
-	}
+	getUserStatistics(days, username) {
+		var userQuery = {},
+			sinceQuery = {
+				updated_at: {
+					$gt: moment().endOf("day").subtract(days || this.config.reportDays, "days").toDate()
+				}
+			};
+		if (username) {
+			userQuery.name = username.toLowerCase();
+		}
 
-	getUser(username) {
-		return User.find({"name": username.toLowerCase()}).lean().execAsync();
+		return User.find(userQuery)
+			.populate({
+				path: 'prs',
+				match: sinceQuery})
+			.populate({
+				path: 'for against',
+				match: sinceQuery,
+				select: 'path body html_url'})
+			.lean()
+			.execAsync();
 	}
 
 	fetchUserDetails(users) {

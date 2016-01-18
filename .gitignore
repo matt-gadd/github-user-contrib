@@ -3,3 +3,4 @@ cache.json
 config.js
 *.bak
 cache
+.idea
