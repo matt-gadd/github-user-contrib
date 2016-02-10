@@ -49,6 +49,10 @@ app.get("/user/:username", (req, res) => {
 	});
 });
 
+app.get("/", (req, res) => {
+	res.redirect("/overview");
+});
+
 app.get("/overview", (req, res) => {
 	contribCat.getUserStatistics(req.query.days)
 		.then(contribCat.runPlugins.bind(contribCat))

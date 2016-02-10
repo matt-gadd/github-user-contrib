@@ -204,9 +204,7 @@ module.exports = class ContribCat {
 	getUserStatistics(days, username) {
 		var userQuery = {},
 			sinceQuery = {
-				updated_at: {
-					$gt: moment().endOf("day").subtract(days || this.config.reportDays, "days").toDate()
-				}
+				$gt: moment().endOf("day").subtract(days || this.config.reportDays, "days").toDate()
 			};
 		if (username) {
 			userQuery.name = username.toLowerCase();
@@ -215,10 +213,10 @@ module.exports = class ContribCat {
 		return User.find(userQuery)
 			.populate({
 				path: 'prs',
-				match: sinceQuery})
+				match: { "created_at": sinceQuery }})
 			.populate({
 				path: 'for against',
-				match: sinceQuery,
+				match: { "updated_at": sinceQuery },
 				select: 'path body html_url'})
 			.lean()
 			.execAsync();
@@ -235,17 +233,16 @@ module.exports = class ContribCat {
 	}
 
 	saveUsers(users) {
-		return Promise.map(Object.keys(users), (username) => {
-			return User.findOneAndUpdate({"name": username}, users[username], {"upsert": true, "new": true}).execAsync()
-				.reflect().then((body) => {
-					return body._doc
-				})
+		return Promise.map(users, (user) => {
+			return User.findOneAndUpdate({"name": user.name}, user, {"upsert": true, "new": true}).execAsync().reflect();
+		}).then(() => {
+			return users;
 		});
 	}
 
 	runPlugins(users) {
 		var result = {
-			startDate: moment().endOf("day").subtract(this.config.days, "days"),
+			startDate: moment().endOf("day").subtract(this.config.reportDays, "days"),
 			users: users
 		};
 		return Promise.each(this.config.plugins, (plugin) => {
