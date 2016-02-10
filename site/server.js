@@ -14,8 +14,12 @@ var env = nunjucks.configure("./templates", {
 	express: app
 });
 
-env.addFilter('githubPretty', function(str, count) {
+env.addFilter('githubPretty', function(str) {
     return str.replace(/.*?.com\//, "").replace(/#.*/, "");
+});
+
+env.addFilter('githubLinkBuilder', function(str) {
+	return config.githubUrl + "/" + str;
 });
 
 env.addFilter('sentimentClass', function(str, count) {
@@ -58,10 +62,10 @@ app.get("/overview", (req, res) => {
 		.then(contribCat.runPlugins.bind(contribCat))
 		.then((results) => {
 		results.users.sort(function (a, b) {
-			if (a.kudos > b.kudos) {
+			if (a.scores.kudos > b.scores.kudos) {
 				return 1;
 			}
-			if (a.kudos < b.kudos) {
+			if (a.scores.kudos < b.scores.kudos) {
 				return -1;
 			}
 			return 0;
