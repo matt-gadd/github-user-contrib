@@ -55,6 +55,8 @@ module.exports = class ContribCat {
 			});
 
 			return Promise.map(items, (item) => {
+				item.base.repo.full_name = item.base.repo.full_name.toLowerCase();
+				item.user.login = item.user.login.toLowerCase();
 				return PullRequest.findOneAndUpdate({"url": item.url}, item, {"upsert": true}).execAsync().reflect();
 			}).then(() => {
 				if (links && links.next && items.length === body.length) {
@@ -70,6 +72,7 @@ module.exports = class ContribCat {
 
 			body = _.cloneDeep(body);
 			body.forEach((comment) => {
+				comment.user.login = comment.user.login.toLowerCase();
 				if (!comment.pull_request_url) {
 					comment.pull_request_url = pr_url;
 				}
@@ -162,36 +165,57 @@ module.exports = class ContribCat {
 				var author = pr.user.login;
 				if (!users[author]) {
 					users[author] = {
+						"repos": [],
 						"name": author.toLowerCase(),
-						"prs": [],
-						"for": [],
-						"against": [],
 						"gravatar": pr.user.avatar_url
 					};
 				}
 
-				if (_.findIndex(users[author].prs, function(o) {return pr._id.equals(o);}) === -1) {
-					users[author].prs.push(pr);
+				let authorRepo = _.find(users[author].repos, { 'name': pr.base.repo.full_name});
+
+				if (!authorRepo) {
+					authorRepo = {
+						"name": pr.base.repo.full_name,
+						"prs": [],
+						"for": [],
+						"against": []
+					};
+					users[author].repos.push(authorRepo);
+				}
+
+				if (_.findIndex(authorRepo.prs, function(o) {return pr._id.equals(o);}) === -1) {
+					authorRepo.prs.push(pr);
 				}
 
 				return Comment.find({"pull_request_url": pr.url }).lean().execAsync().map((comment) => {
 					var commenter = comment.user.login;
 					if (!users[commenter]) {
 						users[commenter] = {
+							"repos": [],
 							"name": commenter.toLowerCase(),
-							"prs": [],
-							"for": [],
-							"against": [],
 							"gravatar": comment.user.avatar_url
 						};
 					}
+
+					let commenterRepo = _.find(users[commenter].repos, { 'name': pr.base.repo.full_name});
+
+					if (!commenterRepo) {
+						commenterRepo = {
+							"name": pr.base.repo.full_name,
+							"prs": [],
+							"for": [],
+							"against": []
+						};
+						users[commenter].repos.push(commenterRepo);
+					}
+
 					if (comment.user.login !== author) {
-						if (_.findIndex(users[author].against, function(o) {return comment._id.equals(o);}) === -1) {
-							users[author].against.push(comment);
+						if (_.findIndex(authorRepo.against, function(o) {return comment._id.equals(o);}) === -1) {
+							authorRepo.against.push(comment);
 						}
 
-						if (_.findIndex(users[commenter].for, function(o) {return comment._id.equals(o);}) === -1) {
-							users[commenter].for.push(comment);
+						if (_.findIndex(commenterRepo.for, function(o) {return comment._id.equals(o);}) === -1) {
+							commenterRepo.for.push(comment);
 						}
 					}
 				});
@@ -212,14 +236,20 @@ module.exports = class ContribCat {
 
 		return User.find(userQuery)
 			.populate({
-				path: 'prs',
+				path: 'repos.prs',
 				match: { "created_at": sinceQuery }})
 			.populate({
-				path: 'for against',
+				path: 'repos.for repos.against',
 				match: { "updated_at": sinceQuery },
-				select: 'path body html_url'})
+				select: 'path body html_url user.login'})
 			.lean()
-			.execAsync();
+			.execAsync().then((users) => {
+				return {
+					startDate: moment().endOf("day").subtract(days || this.config.reportDays, "days"),
+					reportDays: this.config.reportDays,
+					users: users
+				};
+			});
 	}
 
 	fetchUserDetails(users) {
@@ -240,11 +270,7 @@ module.exports = class ContribCat {
 		});
 	}
 
-	runPlugins(users) {
-		var result = {
-			startDate: moment().endOf("day").subtract(this.config.reportDays, "days"),
-			users: users
-		};
+	runPlugins(result) {
 		return Promise.each(this.config.plugins, (plugin) => {
 			return plugin(result);
 		}).then(() => {

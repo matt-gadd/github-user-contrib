@@ -34,6 +34,7 @@
 				<table class="table table-fixedheader table-striped table-bordered table-condensed">
 					<thead>
 					<tr>
+						<th class="rank">Rank</th>
 						<th class="name">Name</th>
 						<th>Pull Request Count</th>
 						<th>Average Comments</th>
@@ -45,12 +46,13 @@
 					<tbody>
 					{% for user in users %}
 					<tr>
+						<td class="rank">{{ loop.index }}</td>
 						<td class="name"><a href="/user/{{ user.name }}">{{ user.name }}</a></td>
-						<td >{{ user.prs.length }}</td>
-						<td >{{ user.averageCommentsPerPr }}</td>
-						<td >{{ user.for.length }}</td>
-						<td >{{ user.against.length }}</td>
-						<td >{{ user.kudos }} {% if user.partial %} (projected) {% endif %}</td>
+						<td>{{ user.scores.prCount }}</td>
+						<td>{{ user.scores.averageCommentsPerPr }}</td>
+						<td>{{ user.scores.forCount }}</td>
+						<td>{{ user.scores.againstCount }}</td>
+						<td>{{ user.scores.kudos }} {% if user.partial %} (projected) {% endif %}</td>
 					</tr>
 					{% endfor %}
 					</tbody>

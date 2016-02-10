@@ -37,7 +37,7 @@
 								<img src="{{ user.gravatar }}" width="230"/>
 							</div>
 							<div class="kudos">
-								<div class="score">{{ user.kudos }}</div>
+								<div class="score">{{ user.scores.kudos }}</div>
 							</div>
 						</div>
 						<ul class="list-group list-group-flush">
@@ -45,44 +45,66 @@
 								<span class="created-at">{{ user.details.created_at | formatDate }}</span>
 							</li>
 							<li class="list-group-item">Pull Requests made
-								<span class="label label-primary">{{ user.prs.length }}</span>
+								<span class="label label-primary">{{ user.scores.prCount }}</span>
 							</li>
 							<li class="list-group-item">Comments made
-								<span class="label label-primary">{{ user.for.length }}</span>
+								<span class="label label-primary">{{ user.scores.forCount }}</span>
 							</li>
 							<li class="list-group-item">Comments against
-								<span class="label label-primary">{{ user.against.length }}</span>
+								<span class="label label-primary">{{ user.scores.againstCount }}</span>
 							</li>
 							<li class="list-group-item">Average comments per PR
-								<span class="label label-primary">{{ user.averageCommentsPerPr }}</span>
+								<span class="label label-primary">{{ user.scores.averageCommentsPerPr }}</span>
 							</li>
-							<li class="list-group-item">Emoji's used
-								<span class="label label-primary">{{ user.emojis }}</span>
+							<li class="list-group-item excludedScoreAttribute">Emoji's used
+								<span class="label label-primary">{{ user.scores.emojis }}</span>
 							</li>
-							<li class="list-group-item">Sentiment
-								<span class="label label-primary">{{ user.sentiment }}</span>
-							</li>
-							<li class="list-group-item">Most comfortable Repo
-							</li>
-							<li class="list-group-item">Least comfortable Repo
+							<li class="list-group-item excludedScoreAttribute">Sentiment
+								<span class="label label-primary">{{ user.scores.sentiment }}</span>
 							</li>
 						</ul>
 					</div>
 				</div>
-				<div class="col-lg-9">
+				<div class="col-lg-4">
+					<div class="panel panel-default">
+						<div class="panel-heading">Most comfortable Repositories</div>
+						<ul class="list-group list-group-flush">
+							{% for repo in user.strongestRepos %}
+							<li class="list-group-item">
+								<a href="{{repo.name | githubLinkBuilder}}">{{ repo.name  }}</a>
+								<span class="label label-primary">{{ repo.kudos }}</span>
+							</li>
+							{% endfor %}
+						</ul>
+					</div>
+				</div>
+				<div class="col-lg-4">
+					<div class="panel panel-default">
+						<div class="panel-heading">Least comfortable Repositories</div>
+						{% for repo in user.weakestRepos %}
+						<li class="list-group-item">
+							<a href="{{repo.name | githubLinkBuilder}}">{{ repo.name  }}</a>
+							<span class="label label-primary">{{ repo.kudos }}</span>
+						</li>
+						{% endfor %}
+					</div>
+				</div>
+				<div class="col-lg-8">
 					<div class="panel panel-default" id="comments">
 						<div class="panel-heading">Your Comments
 						</div>
 						<div class="panel-body comment-list">
-							{% for comment in  user.for %}
+							{% for repo in user.repos %}
+							{% for comment in repo.for %}
 							<div class="panel panel-{{ comment.sentiment | sentimentClass }}" id="labels">
-								<div class="panel-heading">
+								<div class="comment panel-heading">
 									<a href="{{ comment.html_url }}">{{ comment.html_url | githubPretty }}</a>
 								</div>
-								<div class="panel-body">
-									{{ comment.body }}
+								<div class="comment panel-body">
+									{{ comment.body | safe }}
 								</div>
 							</div>
+							{% endfor %}
 							{% endfor %}
 						</div>
 					</div>
