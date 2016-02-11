@@ -10,7 +10,7 @@ module.exports = function (options) {
 	}
 
 	function scoreAgainstComment(previousValue, currentValue) {
-		return previousValue + currentValue.path ? options.weighting.against.diff : options.weighting.against.issue;
+		return previousValue - currentValue.path ? options.weighting.against.diff : options.weighting.against.issue;
 	}
 
 	return function (results) {
