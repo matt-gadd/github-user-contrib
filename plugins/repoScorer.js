@@ -40,6 +40,9 @@ module.exports = function (options) {
 					comment.sentiment = sentiment;
 				});
 
+				let averageCommentsPerPr = repo.prs.length === 0 ? 0 : repo.againstFiltered.length / repo.prs.length;
+				repo.averageCommentsPerPr = Math.ceil(averageCommentsPerPr);
+
 				repo.kudos = (repo.againstScore + repo.forScore) + repo.prScore;
 			});
 		});
