@@ -40,8 +40,6 @@ module.exports = function (options) {
 					comment.sentiment = sentiment;
 				});
 
-				repo.test = repo.forFiltered.length - repo.againstFiltered.length + (repo.prs.length * 2);
-
 				let averageCommentsPerPr = repo.prs.length === 0 ? 0 : repo.againstFiltered.length / repo.prs.length;
 				repo.averageCommentsPerPr = Math.ceil(averageCommentsPerPr);
 
