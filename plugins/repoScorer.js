@@ -17,6 +17,8 @@ module.exports = function (options) {
 		results.users.forEach(function (user) {
 			user.repos.forEach((repo) => {
 				repo.prScore = repo.prs.length * options.weighting.pr;
+				repo.sentiment = 0;
+				repo.emojis = 0;
 
 				if (repo.againstFiltered) {
 					repo.againstScore = repo.againstFiltered.reduce(scoreAgainstComment, 0);
