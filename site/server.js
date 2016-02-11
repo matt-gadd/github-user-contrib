@@ -22,7 +22,7 @@ env.addFilter('githubLinkBuilder', function(str) {
 	return config.githubUrl + "/" + str;
 });
 
-env.addFilter('sentimentClass', function(str, count) {
+env.addFilter('sentimentClass', function(str) {
 	var val = parseInt(str);
 	var className = "default";
 	if (val < -1) {
@@ -61,18 +61,9 @@ app.get("/overview", (req, res) => {
 	contribCat.getUserStatistics(req.query.days)
 		.then(contribCat.runPlugins.bind(contribCat))
 		.then((results) => {
-		results.users.sort(function (a, b) {
-			if (a.scores.kudos > b.scores.kudos) {
-				return 1;
-			}
-			if (a.scores.kudos < b.scores.kudos) {
-				return -1;
-			}
-			return 0;
-		}).reverse();
-		res.render('overview.html', {
-			users: results.users
-		});
+			res.render('overview.html', {
+				users: results.users
+			});
 	});
 });
 
