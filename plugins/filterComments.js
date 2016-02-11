@@ -2,7 +2,7 @@
 module.exports = function (options) {
 
 	function filterComment(comment) {
-		let commentLength = comment.body.replace(/(:.*?:)*/g, "").length;
+		let commentLength = comment.body.replace(/(:.*?:)*/g, "").trim().length;
 		if (options.filterIssueOnly) {
 			return (commentLength && comment.path) || commentLength > options.minlength;
 		}
