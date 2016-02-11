@@ -3,20 +3,24 @@ var _ = require("lodash");
 
 module.exports = function (results) {
 	results.users.forEach(user => {
-		user.repos.sort(function (a, b) {
-			if (a.averageCommentsPerPr > b.averageCommentsPerPr) {
+		let filteredRepos = user.repos.filter(repo => {
+			return repo.prs.length > 4;
+		});
+
+		filteredRepos.sort(function (a, b) {
+			if (a.kudos > b.kudos) {
 				return 1;
 			}
-			if (a.averageCommentsPerPr < b.averageCommentsPerPr) {
+			if (a.kudos < b.kudos) {
 				return -1;
 			}
 			return 0;
 		});
 
-		let bestRepoCount = user.repos.length < 3 ? 1 : user.repos.length < 5 ? 2 : 3;
+		let bestRepoCount = filteredRepos.length < 3 ? 1 : filteredRepos.length < 5 ? 2 : 3;
 
-		user.strongestRepos = _.takeRight(user.repos, bestRepoCount).reverse();
-		user.weakestRepos = _.take(user.repos, bestRepoCount);
+		user.strongestRepos = _.takeRight(filteredRepos, bestRepoCount).reverse();
+		user.weakestRepos = _.take(filteredRepos, bestRepoCount);
 	});
 
 	return results;
