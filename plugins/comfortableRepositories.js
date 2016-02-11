@@ -8,10 +8,10 @@ module.exports = function (results) {
 		});
 
 		filteredRepos.sort(function (a, b) {
-			if (a.kudos > b.kudos) {
+			if (a.test > b.test) {
 				return 1;
 			}
-			if (a.kudos < b.kudos) {
+			if (a.test < b.test) {
 				return -1;
 			}
 			return 0;
