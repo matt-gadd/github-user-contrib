@@ -11,12 +11,12 @@ module.exports = function (results) {
 				return -1;
 			}
 			return 0;
-		});
+		}).reverse();
 
 		let bestRepoCount = user.repos.length < 3 ? 1 : user.repos.length < 5 ? 2 : 3;
 
-		user.strongestRepos = user.repos.splice(0, bestRepoCount).reverse();
-		user.weakestRepos = _.take(user.repos, bestRepoCount);
+		user.strongestRepos = user.repos.splice(0, bestRepoCount);
+		user.weakestRepos = _.takeRight(user.repos, bestRepoCount).reverse();
 	});
 
 	return results;
