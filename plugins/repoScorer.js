@@ -6,11 +6,11 @@ var marked = require("marked");
 module.exports = function (options) {
 
 	function scoreForComment(previousValue, currentValue) {
-		return previousValue + currentValue.path ? options.weighting.for.diff : options.weighting.for.issue;
+		return previousValue + (currentValue.path ? options.weighting.for.diff : options.weighting.for.issue);
 	}
 
 	function scoreAgainstComment(previousValue, currentValue) {
-		return previousValue - currentValue.path ? options.weighting.against.diff : options.weighting.against.issue;
+		return previousValue - (currentValue.path ? options.weighting.against.diff : options.weighting.against.issue);
 	}
 
 	return function (results) {
