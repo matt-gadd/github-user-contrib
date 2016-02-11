@@ -6,6 +6,15 @@ var marked = require("marked");
 var moment = require("moment");
 
 module.exports = function (options) {
+
+	function scoreForComment(previousValue, currentValue) {
+		return previousValue + currentValue.path ? options.weighting.for.diff : options.weighting.for.issue;
+	}
+
+	function scoreAgainstComment(previousValue, currentValue) {
+		return previousValue + currentValue.path ? options.weighting.against.diff : options.weighting.against.issue;
+	}
+
 	return function (results) {
 		results.users.forEach(function (user) {
 			user.scores = {
@@ -21,29 +30,19 @@ module.exports = function (options) {
 			};
 
 			user.repos.forEach((repo) => {
-				repo.forScore = 0;
-				repo.againstScore = 0;
 				repo.prScore = repo.prs.length * options.weighting.pr;
 
-				repo.for.forEach((comment) => {
-					if (comment.path) {
-						repo.forScore += options.weighting.for.diff;
-					} else {
-						if (comment.body.length > 20) {
-							repo.forScore += options.weighting.for.issue;
-						}
-					}
-				});
+				if (repo.againstFiltered) {
+					repo.againstScore = repo.againstFiltered.reduce(scoreAgainstComment, 0);
+				} else {
+					repo.againstScore = repo.against.reduce(scoreAgainstComment, 0);
+				}
 
-				repo.against.forEach((comment) => {
-					if (comment.path) {
-						repo.againstScore -= options.weighting.against.diff;
-					} else {
-						if (comment.body.length > 20) {
-							repo.againstScore -= options.weighting.against.issue;
-						}
-					}
-				});
+				if (repo.againstFiltered) {
+					repo.forScore = repo.forFiltered.reduce(scoreForComment, 0);
+				} else {
+					repo.forScore = repo.for.reduce(scoreForComment, 0);
+				}
 
 				repo.for.forEach(function (comment) {
 					var sentiment = analyze(comment.body).score;
