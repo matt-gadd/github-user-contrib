@@ -3,9 +3,9 @@ module.exports = function (options) {
 
 	function filterComment(comment) {
 		if (options.filterIssueOnly) {
-			return comment.path || comment.body.length > options.minlength;
+			return comment.path || comment.body.replace(/(:.*?:)*/g, "").length > options.minlength;
 		}
-		return comment.body.length > options.minlength;
+		return comment.body.replace(/(:.*?:)*/g, "").length > options.minlength;
 	}
 
 	return function (results) {
