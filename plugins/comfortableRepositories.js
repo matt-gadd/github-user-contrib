@@ -14,9 +14,10 @@ module.exports = function (results) {
 		}).reverse();
 
 		let bestRepoCount = user.repos.length < 3 ? 1 : user.repos.length < 5 ? 2 : 3;
+		let clonedRepos = _.clone(user.repos);
 
-		user.strongestRepos = user.repos.splice(0, bestRepoCount);
-		user.weakestRepos = _.takeRight(user.repos, bestRepoCount).reverse();
+		user.strongestRepos = clonedRepos.splice(0, bestRepoCount);
+		user.weakestRepos = _.takeRight(clonedRepos, bestRepoCount).reverse();
 	});
 
 	return results;
