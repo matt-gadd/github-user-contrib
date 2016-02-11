@@ -15,7 +15,7 @@ module.exports = function (results) {
 
 		let bestRepoCount = user.repos.length < 3 ? 1 : user.repos.length < 5 ? 2 : 3;
 
-		user.strongestRepos = _.takeRight(user.repos, bestRepoCount).reverse();
+		user.strongestRepos = user.repos.splice(0, bestRepoCount).reverse();
 		user.weakestRepos = _.take(user.repos, bestRepoCount);
 	});
 
