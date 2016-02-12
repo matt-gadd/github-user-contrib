@@ -21,7 +21,7 @@ module.exports = function (options) {
 		}
 
 		comment.filtered = filtered;
-		return !!filtered;
+		return !filtered;
 	}
 
 	return function (results) {
