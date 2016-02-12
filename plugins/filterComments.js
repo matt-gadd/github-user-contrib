@@ -2,18 +2,26 @@
 module.exports = function (options) {
 
 	function filterComment(comment) {
-		let commentLength = comment.body.replace(/(:.*?:)*/g, "").trim().length;
-		if (options.filterIssueOnly) {
-			let keepComment = false;
-			if (commentLength && comment.path) {
-				keepComment = true;
-			} else if (commentLength > options.minlength) {
-				keepComment = true;
-			}
-			comment.filtered = !keepComment;
-			return keepComment;
+		let emojiRegex = /(:.*?:)/g;
+		let hasEmoji = emojiRegex.test(comment.body);
+		let excludedWords = ["merge", "merging"];
+		let commentBody = comment.body.replace(emojiRegex, "").trim();
+		let filtered = false;
+
+		if (commentBody.length < options.minLength) {
+			filtered = true;
 		}
-		return commentLength > options.minlength;
+
+		if (hasEmoji && excludedWords.find(excludedWord => comment.body.includes(excludedWord))) {
+			filtered = true;
+		}
+
+		if (options.filterIssueOnly && !comment.path) {
+			filtered = false;
+		}
+
+		comment.filtered = filtered;
+		return !!filtered;
 	}
 
 	return function (results) {
