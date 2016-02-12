@@ -8,10 +8,12 @@ div.panel-heading {
 	font-weight: bold;
 }
 
-.comment-list {
-	overflow-y: auto;
-	overflow-x: hidden;
-	height: 600px;
+@media (min-width: 970px) {
+	.comment-list {
+		overflow-y: auto;
+		overflow-x: hidden;
+		height: 600px;
+	}
 }
 
 .grav {
