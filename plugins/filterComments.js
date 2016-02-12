@@ -20,6 +20,10 @@ module.exports = function (options) {
 			filtered = false;
 		}
 
+		if (!commentBody.length) {
+			filtered = true;
+		}
+
 		comment.filtered = filtered;
 		return !filtered;
 	}
