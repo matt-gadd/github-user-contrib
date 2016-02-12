@@ -57,10 +57,10 @@
 								<span class="label label-primary">{{ user.scores.averageCommentsPerPr }}</span>
 							</li>
 							<li class="list-group-item excludedScoreAttribute">Comments made (filtered)
-								<span class="label label-primary">{{ user.scores.forCount }} - {{ user.scores.filteredForCount }}</span>
+								<span class="label label-primary">{{ user.scores.forCount - user.scores.filteredForCount }}</span>
 							</li>
 							<li class="list-group-item excludedScoreAttribute">Comments against (filtered)
-								<span class="label label-primary">{{ user.scores.againstCount }} - {{ user.scores.filteredAgainstCount }}</span>
+								<span class="label label-primary">{{ user.scores.againstCount - user.scores.filteredAgainstCount }}</span>
 							</li>
 							<li class="list-group-item excludedScoreAttribute">Sentiment
 								<span class="label label-primary">{{ user.scores.sentiment }}</span>
