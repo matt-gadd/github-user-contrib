@@ -16,7 +16,7 @@ module.exports = function (options) {
 			filtered = true;
 		}
 
-		if (options.filterIssueOnly && !comment.path) {
+		if (options.filterIssueOnly && comment.path) {
 			filtered = false;
 		}
 
