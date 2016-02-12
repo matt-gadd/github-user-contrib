@@ -4,11 +4,14 @@ module.exports = function (options) {
 	function filterComment(comment) {
 		let commentLength = comment.body.replace(/(:.*?:)*/g, "").trim().length;
 		if (options.filterIssueOnly) {
-			let result = (commentLength && comment.path) || commentLength > options.minlength;
-			if (!result) {
-				comment.filtered = true;
+			let keepComment = false;
+			if (commentLength && comment.path) {
+				keepComment = true;
+			} else if (commentLength > options.minlength) {
+				keepComment = true;
 			}
-			return result;
+			comment.filtered = !keepComment;
+			return keepComment;
 		}
 		return commentLength > options.minlength;
 	}
