@@ -4,7 +4,11 @@ module.exports = function (options) {
 	function filterComment(comment) {
 		let commentLength = comment.body.replace(/(:.*?:)*/g, "").trim().length;
 		if (options.filterIssueOnly) {
-			return (commentLength && comment.path) || commentLength > options.minlength;
+			let result = (commentLength && comment.path) || commentLength > options.minlength;
+			if (!result) {
+				comment.filtered = true;
+			}
+			return result;
 		}
 		return commentLength > options.minlength;
 	}
