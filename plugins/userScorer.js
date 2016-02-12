@@ -12,7 +12,9 @@ module.exports = function (options) {
 				"againstScore": 0,
 				"prCount": 0,
 				"forCount": 0,
+				filteredForCount: 0,
 				"againstCount": 0,
+				filteredAgainstCount: 0,
 				"sentiment": 0,
 				"emojis": 0
 			};
@@ -24,6 +26,8 @@ module.exports = function (options) {
 				user.scores.againstScore += repo.againstScore;
 				user.scores.prCount += repo.prs.length;
 				user.scores.forCount += repo.for.length;
+				user.scores.filteredForCount += repo.forFiltered.length;
+				user.scores.filteredAgainstCount += repo.againstFiltered.length;
 				user.scores.againstCount += repo.against.length;
 				user.scores.emojis += repo.emojis;
 				user.scores.sentiment += repo.sentiment;

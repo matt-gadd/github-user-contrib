@@ -48,19 +48,25 @@
 								<span class="label label-primary">{{ user.scores.prCount }}</span>
 							</li>
 							<li class="list-group-item">Comments made
-								<span class="label label-primary">{{ user.scores.forCount }}</span>
+								<span class="label label-primary">{{ user.scores.filteredForCount }}</span>
 							</li>
 							<li class="list-group-item">Comments against
-								<span class="label label-primary">{{ user.scores.againstCount }}</span>
+								<span class="label label-primary">{{ user.scores.filteredAgainstCount }}</span>
 							</li>
-							<li class="list-group-item">Average comments per PR
+							<li class="list-group-item excludedScoreAttribute">Average comments per PR
 								<span class="label label-primary">{{ user.scores.averageCommentsPerPr }}</span>
 							</li>
-							<li class="list-group-item excludedScoreAttribute">Emoji's used
-								<span class="label label-primary">{{ user.scores.emojis }}</span>
+							<li class="list-group-item excludedScoreAttribute">Comments made (unfiltered)
+								<span class="label label-primary">{{ user.scores.forCount }}</span>
+							</li>
+							<li class="list-group-item excludedScoreAttribute">Comments against (unfiltered)
+								<span class="label label-primary">{{ user.scores.againstCount }}</span>
 							</li>
 							<li class="list-group-item excludedScoreAttribute">Sentiment
 								<span class="label label-primary">{{ user.scores.sentiment }}</span>
+							</li>
+							<li class="list-group-item excludedScoreAttribute">Emoji's used
+								<span class="label label-primary">{{ user.scores.emojis }}</span>
 							</li>
 						</ul>
 					</div>
