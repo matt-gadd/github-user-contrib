@@ -46,7 +46,9 @@ h3 {
 
 .filteredComment {
 	float: right;
+	margin: 0px 3px;
 }
+
 
 .kudos {
 	text-align: center;

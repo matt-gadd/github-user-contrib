@@ -105,6 +105,7 @@
 							<div class="panel panel-{{ comment.sentiment | sentimentClass }}" id="labels">
 								<div class="comment panel-heading">
 									<a href="{{ comment.html_url }}">{{ comment.html_url | githubPretty }}</a>
+									<span class="filteredComment label label-danger">{{ "diff" if comment.path else "issue" }}</span>
 									{% if comment.filtered %}
 									<span class="filteredComment label label-primary" title="Filtered comments are not included in the score calculation">filtered</span>
 									{% endif %}
