@@ -44,23 +44,23 @@
 							<li class="list-group-item">Joined
 								<span class="created-at">{{ user.details.created_at | formatDate }}</span>
 							</li>
-							<li class="list-group-item">Pull Requests made
+							<li class="list-group-item">Pull Requests Made
 								<span class="label label-primary">{{ user.scores.prCount }}</span>
 							</li>
-							<li class="list-group-item">Comments made
-								<span class="label label-primary">{{ user.scores.filteredForCount }}</span>
+							<li class="list-group-item">Comments For
+								<span class="label label-primary">{{ user.scores.forUnfilteredCount }}</span>
 							</li>
-							<li class="list-group-item">Comments against
-								<span class="label label-primary">{{ user.scores.filteredAgainstCount }}</span>
+							<li class="list-group-item">Comments Against
+								<span class="label label-primary">{{ user.scores.againstUnfilteredCount }}</span>
 							</li>
 							<li class="list-group-item excludedScoreAttribute">Average comments per PR
 								<span class="label label-primary">{{ user.scores.averageCommentsPerPr }}</span>
 							</li>
-							<li class="list-group-item excludedScoreAttribute">Comments made (filtered)
-								<span class="label label-primary">{{ user.scores.forCount - user.scores.filteredForCount }}</span>
+							<li class="list-group-item excludedScoreAttribute">Total Comments For (filtered)
+								<span class="label label-primary">{{ user.scores.forTotalCount }} ({{ user.scores.forFilteredCount }})</span>
 							</li>
 							<li class="list-group-item excludedScoreAttribute">Comments against (filtered)
-								<span class="label label-primary">{{ user.scores.againstCount - user.scores.filteredAgainstCount }}</span>
+								<span class="label label-primary">{{ user.scores.againstTotalCount }} ({{ user.scores.againstFilteredCount }})</span>
 							</li>
 							<li class="list-group-item excludedScoreAttribute">Sentiment
 								<span class="label label-primary">{{ user.scores.sentiment }}</span>

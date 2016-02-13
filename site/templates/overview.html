@@ -45,6 +45,7 @@
 					</thead>
 					<tbody>
 					{% for user in users %}
+					{% if not user.filtered %}
 					<tr>
 						<td class="rank">{{ loop.index }}</td>
 						<td class="name"><a href="/user/{{ user.name }}">{{ user.name }}</a></td>
@@ -54,6 +55,7 @@
 						<td>{{ user.scores.filteredAgainstCount }}</td>
 						<td>{{ user.scores.kudos }} {% if user.partial %} (projected) {% endif %}</td>
 					</tr>
+					{% endif %}
 					{% endfor %}
 					</tbody>
 				</table>

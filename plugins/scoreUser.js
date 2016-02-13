@@ -11,10 +11,12 @@ module.exports = function (options) {
 				"forScore": 0,
 				"againstScore": 0,
 				"prCount": 0,
-				"forCount": 0,
-				filteredForCount: 0,
-				"againstCount": 0,
-				filteredAgainstCount: 0,
+				"forTotalCount": 0,
+				"forFilteredCount": 0,
+				"forUnfilteredCount": 0,
+				"againstTotalCount": 0,
+				"againstFilteredCount": 0,
+				"againstUnfilteredCount": 0,
 				"sentiment": 0,
 				"emojis": 0
 			};
@@ -25,15 +27,17 @@ module.exports = function (options) {
 				user.scores.forScore += repo.forScore;
 				user.scores.againstScore += repo.againstScore;
 				user.scores.prCount += repo.prs.length;
-				user.scores.forCount += repo.for.length;
-				user.scores.filteredForCount += repo.forFiltered.length;
-				user.scores.filteredAgainstCount += repo.againstFiltered.length;
-				user.scores.againstCount += repo.against.length;
+				user.scores.forTotalCount += repo.for.length;
+				user.scores.forFilteredCount += repo.for.filter(comment => comment.filtered).length;
+				user.scores.forUnfilteredCount += repo.for.filter(comment => !comment.filtered).length;
+				user.scores.againstTotalCount += repo.against.length;
+				user.scores.againstFilteredCount += repo.against.filter(comment => comment.filtered).length;
+				user.scores.againstUnfilteredCount += repo.against.filter(comment => !comment.filtered).length;
 				user.scores.emojis += repo.emojis;
 				user.scores.sentiment += repo.sentiment;
 			});
 
-			let averageCommentsPerPr = user.scores.prCount === 0 ? 0 : user.scores.againstCount / user.scores.prCount;
+			let averageCommentsPerPr = user.scores.prCount === 0 ? 0 : user.scores.againstTotalCount / user.scores.prCount;
 			user.scores.averageCommentsPerPr = Math.ceil(averageCommentsPerPr);
 			user.scores.averageCommentsPerPrForSort = averageCommentsPerPr;
 

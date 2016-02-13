@@ -31,8 +31,8 @@ module.exports = function (options) {
 	return function (results) {
 		results.users.forEach((user) => {
 			user.repos.forEach((repo) => {
-				repo.againstFiltered = repo.against.filter(filterComment);
-				repo.forFiltered = repo.for.filter(filterComment);
+				repo.against.forEach(filterComment);
+				repo.for.forEach(filterComment);
 			});
 		});
 		return results;
