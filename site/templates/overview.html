@@ -51,8 +51,8 @@
 						<td class="name"><a href="/user/{{ user.name }}">{{ user.name }}</a></td>
 						<td>{{ user.scores.prCount }}</td>
 						<td>{{ user.scores.averageCommentsPerPr }}</td>
-						<td>{{ user.scores.forFilteredCount }}</td>
-						<td>{{ user.scores.againstFilteredCount }}</td>
+						<td>{{ user.scores.forUnfilteredCount }}</td>
+						<td>{{ user.scores.againstUnfilteredCount }}</td>
 						<td>{{ user.scores.kudos }} {% if user.partial %} (projected) {% endif %}</td>
 					</tr>
 					{% endif %}
