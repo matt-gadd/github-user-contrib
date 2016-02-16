@@ -106,44 +106,70 @@
 									<a href="#comments-against" role="tab" data-toggle="tab" aria-controls="comments-against" aria-expanded="false">Comments for you</a>
 								</li>
 							</ul>
-							<div class="tab-content">
+							<div class="tab-content comment-list">
 								<div role="tabpanel" class="tab-pane fade active in" id="comments-for" aria-labelledby="comments-for-tab">
-									<div class="panel-body comment-list">
-										{% for repo in user.repos %}
-										{% for comment in repo.for %}
-										<div class="panel panel-{{ comment.sentiment | sentimentClass }}">
-											<div class="comment panel-heading">
-												<a href="{{ comment.html_url }}">{{ comment.html_url | githubPretty }}</a>
-												<span class="filteredComment label label-danger">{{ "diff" if comment.path else "issue" }}</span>
-												{% if comment.filtered %}
-												<span class="filteredComment label label-primary" title="Filtered comments are not included in the score calculation">filtered</span>
-												{% endif %}
+									<div class="panel-group" id="for-accordion" role="tablist" aria-multiselectable="true">
+										{% for repo in user.repos|sort(false, false, "name") %}
+										<div class="panel panel-default">
+											<div class="panel-heading" role="tab" id="for-heading-{{ repo.name }}">
+												<h4 class="panel-title">
+													<a role="button" data-toggle="collapse" data-parent="#for-accordion" href="#for-{{ repo.name | replace("/", "-") }}" aria-controls="for-{{ repo.name }}">
+														{{ repo.name }}
+													</a>
+												</h4>
 											</div>
-											<div class="comment panel-body">
-												{{ comment.body | marked | safe }}
+											<div id="for-{{ repo.name | replace("/", "-") }}" class="panel-collapse collapse {% if loop.first %}in{% endif %}" role="tabpanel" aria-labelledby="for-heading-{{ repo.name }}">
+												<div class="panel-body">
+													{% for comment in repo.for %}
+													<div class="panel panel-{{ comment.sentiment | sentimentClass }}">
+														<div class="comment panel-heading">
+															<a href="{{ comment.html_url }}">{{ comment.html_url | githubPretty }}</a>
+															<span class="filteredComment label label-danger">{{ "diff" if comment.path else "issue" }}</span>
+															{% if comment.filtered %}
+															<span class="filteredComment label label-primary" title="Filtered comments are not included in the score calculation">filtered</span>
+															{% endif %}
+														</div>
+														<div class="comment panel-body">
+															{{ comment.body | marked | safe }}
+														</div>
+													</div>
+													{% endfor %}
+												</div>
 											</div>
 										</div>
-										{% endfor %}
 										{% endfor %}
 									</div>
 								</div>
 								<div role="tabpanel" class="tab-pane fade" id="comments-against" aria-labelledby="comments-against-tab">
-									<div class="panel-body comment-list">
-										{% for repo in user.repos %}
-										{% for comment in repo.against %}
-										<div class="panel panel-{{ comment.sentiment | sentimentClass }}">
-											<div class="comment panel-heading">
-												<a href="{{ comment.html_url }}">{{ comment.html_url | githubPretty }}</a>
-												<span class="filteredComment label label-danger">{{ "diff" if comment.path else "issue" }}</span>
-												{% if comment.filtered %}
-												<span class="filteredComment label label-primary" title="Filtered comments are not included in the score calculation">filtered</span>
-												{% endif %}
+									<div class="panel-group" id="against-accordion" role="tablist" aria-multiselectable="true">
+										{% for repo in user.repos|sort(false, false, "name") %}
+										<div class="panel panel-default">
+											<div class="panel-heading" role="tab" id="against-heading-{{ repo.name }}">
+												<h4 class="panel-title">
+													<a role="button" data-toggle="collapse" data-parent="#against-accordion" href="#against-{{ repo.name | replace("/", "-") }}" aria-controls="against-{{ repo.name }}">
+														{{ repo.name }}
+													</a>
+												</h4>
 											</div>
-											<div class="comment panel-body">
-												{{ comment.body | marked | safe }}
+											<div id="against-{{ repo.name | replace("/", "-") }}" class="panel-collapse collapse {% if loop.first %}in{% endif %}" role="tabpanel" aria-labelledby="against-heading-{{ repo.name }}">
+												<div class="panel-body">
+													{% for comment in repo.against %}
+													<div class="panel panel-{{ comment.sentiment | sentimentClass }}">
+														<div class="comment panel-heading">
+															<a href="{{ comment.html_url }}">{{ comment.html_url | githubPretty }}</a>
+															<span class="filteredComment label label-danger">{{ "diff" if comment.path else "issue" }}</span>
+															{% if comment.filtered %}
+															<span class="filteredComment label label-primary" title="Filtered comments are not included in the score calculation">filtered</span>
+															{% endif %}
+														</div>
+														<div class="comment panel-body">
+															{{ comment.body | marked | safe }}
+														</div>
+													</div>
+													{% endfor %}
+												</div>
 											</div>
 										</div>
-										{% endfor %}
 										{% endfor %}
 									</div>
 								</div>
