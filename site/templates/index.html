@@ -114,7 +114,7 @@
 											<div class="panel-heading" role="tab" id="for-heading-{{ repo.name }}">
 												<h4 class="panel-title">
 													<a role="button" data-toggle="collapse" data-parent="#for-accordion" href="#for-{{ repo.name | replace("/", "-") }}" aria-controls="for-{{ repo.name }}">
-														{{ repo.name }}
+														{{ repo.name }} ({{ repo.for.length }})
 													</a>
 												</h4>
 											</div>
@@ -147,7 +147,7 @@
 											<div class="panel-heading" role="tab" id="against-heading-{{ repo.name }}">
 												<h4 class="panel-title">
 													<a role="button" data-toggle="collapse" data-parent="#against-accordion" href="#against-{{ repo.name | replace("/", "-") }}" aria-controls="against-{{ repo.name }}">
-														{{ repo.name }}
+														{{ repo.name }} ({{ repo.against.length }})
 													</a>
 												</h4>
 											</div>
