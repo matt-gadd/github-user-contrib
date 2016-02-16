@@ -116,7 +116,7 @@
 													<a role="button" data-toggle="collapse" data-parent="#for-accordion" href="#for-{{ repo.name | replace("/", "-") }}" aria-controls="for-{{ repo.name }}">
 														{{ repo.name }}
 													</a>
-													<span class="repo-for-count">{{ repo.for.length }}</span>
+													<span class="repo-for-count badge">{{ repo.for.length }}</span>
 												</h4>
 											</div>
 											<div id="for-{{ repo.name | replace("/", "-") }}" class="panel-collapse collapse {% if loop.first %}in{% endif %}" role="tabpanel" aria-labelledby="for-heading-{{ repo.name }}">
@@ -150,7 +150,7 @@
 													<a role="button" data-toggle="collapse" data-parent="#against-accordion" href="#against-{{ repo.name | replace("/", "-") }}" aria-controls="against-{{ repo.name }}">
 														{{ repo.name }}
 													</a>
-													<span class="repo-against-count">{{ repo.against.length }}</span>
+													<span class="repo-against-count badge">{{ repo.against.length }}</span>
 												</h4>
 											</div>
 											<div id="against-{{ repo.name | replace("/", "-") }}" class="panel-collapse collapse {% if loop.first %}in{% endif %}" role="tabpanel" aria-labelledby="against-heading-{{ repo.name }}">
