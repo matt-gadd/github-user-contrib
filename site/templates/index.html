@@ -6,8 +6,8 @@
 		<title>github-user-contrib</title>
 		<meta name="viewport" content="width=device-width">
 		<link rel="stylesheet" href="../bootstrap-theme-github/dist/css/bootstrap.css">
-		<link rel="stylesheet" href="../templates/app.css">
 		<link rel="stylesheet" href="../emojify/css/basic/emojify.min.css" />
+		<link rel="stylesheet" href="../templates/app.css">
 		<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/2.0.0/jquery.min.js"></script>
 		<script type="text/javascript" src="../bootstrap-theme-github/dist/js/bootstrap.min.js"></script>
 	</head>
@@ -111,7 +111,7 @@
 									<div class="panel-body comment-list">
 										{% for repo in user.repos %}
 										{% for comment in repo.for %}
-										<div class="panel panel-{{ comment.sentiment | sentimentClass }}" id="labels">
+										<div class="panel panel-{{ comment.sentiment | sentimentClass }}">
 											<div class="comment panel-heading">
 												<a href="{{ comment.html_url }}">{{ comment.html_url | githubPretty }}</a>
 												<span class="filteredComment label label-danger">{{ "diff" if comment.path else "issue" }}</span>
@@ -120,7 +120,7 @@
 												{% endif %}
 											</div>
 											<div class="comment panel-body">
-												{{ comment.body | safe }}
+												{{ comment.body | marked | safe }}
 											</div>
 										</div>
 										{% endfor %}
@@ -131,7 +131,7 @@
 									<div class="panel-body comment-list">
 										{% for repo in user.repos %}
 										{% for comment in repo.against %}
-										<div class="panel panel-{{ comment.sentiment | sentimentClass }}" id="labels">
+										<div class="panel panel-{{ comment.sentiment | sentimentClass }}">
 											<div class="comment panel-heading">
 												<a href="{{ comment.html_url }}">{{ comment.html_url | githubPretty }}</a>
 												<span class="filteredComment label label-danger">{{ "diff" if comment.path else "issue" }}</span>
@@ -140,7 +140,7 @@
 												{% endif %}
 											</div>
 											<div class="comment panel-body">
-												{{ comment.body | safe }}
+												{{ comment.body | marked | safe }}
 											</div>
 										</div>
 										{% endfor %}
@@ -159,7 +159,6 @@
 			img_dir: "../emojify/images/basic"
 		});
 		emojify.run(document.getElementById("comments"));
-		$('#myTabs a:first').tab('show')
 	</script>
 	</body>
 </html>

@@ -20,6 +20,10 @@ div.panel-heading {
 	text-align: center;
 }
 
+.emoji {
+	margin-bottom: 0;
+}
+
 li span.label {
 	float: right;
 	display: inline-block;

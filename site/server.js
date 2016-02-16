@@ -5,6 +5,7 @@ var config = require("../config");
 var ContribCat = require("../lib");
 var mongoose = require('mongoose');
 var moment = require("moment");
+var marked = require("marked");
 var contribCat = new ContribCat(config);
 
 var port = 9000;
@@ -33,6 +34,10 @@ env.addFilter('sentimentClass', function(str) {
 		className = "success";
 	}
     return className;
+});
+
+env.addFilter("marked", function (str) {
+	return marked(str);
 });
 
 env.addFilter("formatDate", function (str) {
