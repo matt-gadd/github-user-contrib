@@ -16,6 +16,10 @@ div.panel-heading {
 	}
 }
 
+button.navbar-toggle {
+	display: none;
+}
+
 .grav {
 	text-align: center;
 }
