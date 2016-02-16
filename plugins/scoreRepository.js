@@ -1,7 +1,6 @@
 "use strict";
 var analyze = require('Sentimental').analyze;
 var emojify = require("emojify.js");
-var marked = require("marked");
 
 function scoreComment(previousValue, currentValue, weighting) {
 	if (currentValue.filtered) {
@@ -44,7 +43,6 @@ module.exports = function (options) {
 					emojify.replace(comment.body, function () {
 						repo.scores.emojis += 1;
 					});
-					comment.body = marked(comment.body);
 					comment.sentiment = sentiment;
 				});
 

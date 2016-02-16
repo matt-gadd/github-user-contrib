@@ -20,6 +20,14 @@ div.panel-heading {
 	text-align: center;
 }
 
+.emoji {
+	margin-bottom: 0;
+}
+
+.repo-for-count, .repo-against-count {
+	float: right;
+}
+
 li span.label {
 	float: right;
 	display: inline-block;

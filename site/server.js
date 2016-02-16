@@ -5,6 +5,7 @@ var config = require("../config");
 var ContribCat = require("../lib");
 var mongoose = require('mongoose');
 var moment = require("moment");
+var marked = require("marked");
 var contribCat = new ContribCat(config);
 
 var port = 9000;
@@ -35,6 +36,10 @@ env.addFilter('sentimentClass', function(str) {
     return className;
 });
 
+env.addFilter("marked", function (str) {
+	return marked(str);
+});
+
 env.addFilter("formatDate", function (str) {
 	return moment(str).format('DD/MM/YYYY');
 });
@@ -46,34 +51,20 @@ app.engine("html", nunjucks.render);
 app.set("view engine", "html");
 
 app.get("/user/:username", (req, res) => {
-	var promise = contribCat.getUserStatistics(req.query.days, req.params.username);
-
-	if (req.query.days) {
-		promise = promise.then(contribCat.runPlugins.bind(contribCat));
-	}
-
-	promise.then((results) => {
-		res.render('index.html', {
+	contribCat.getUserStatistics(req.query.days, req.params.username).then(contribCat.runPlugins.bind(contribCat)).then((results) => {
+		res.render('user.html', {
 			user: results.users[0]
 		});
 	});
 });
 
 app.get("/", (req, res) => {
-	res.redirect("/overview");
-});
-
-app.get("/overview", (req, res) => {
-	var promise = contribCat.getUserStatistics(req.query.days, req.params.username);
-
-	if (req.query.days) {
-		promise = promise.then(contribCat.runPlugins.bind(contribCat));
-	}
-
-	promise.then((results) => {
-		res.render('overview.html', {
-			users: results.users
-		});
+	contribCat.getUserStatistics(req.query.days)
+		.then(contribCat.runPlugins.bind(contribCat))
+		.then((results) => {
+			res.render('index.html', {
+				users: results.users
+			});
 	});
 });
 
