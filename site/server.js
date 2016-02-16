@@ -7,6 +7,7 @@ var mongoose = require('mongoose');
 var moment = require("moment");
 var marked = require("marked");
 var contribCat = new ContribCat(config);
+var User = require("./../models/User");
 
 var port = 9000;
 var env = nunjucks.configure("./templates", {
@@ -51,20 +52,29 @@ app.engine("html", nunjucks.render);
 app.set("view engine", "html");
 
 app.get("/user/:username", (req, res) => {
-	contribCat.getUserStatistics(req.query.days, req.params.username).then(contribCat.runPlugins.bind(contribCat)).then((results) => {
+	var sinceQuery = {
+		$gt: moment().endOf("day").subtract(config.reportDays, "days").toDate()
+	};
+
+	User.findOne({"name": req.params.username.toLowerCase()}, {"repos.prs": 0}).populate({
+			path: 'repos.prs',
+			match: { "created_at": sinceQuery }})
+		.populate({
+			path: 'repos.for repos.against',
+			match: { "updated_at": sinceQuery },
+			select: 'path body html_url user.login'})
+		.lean().then((user) => {
 		res.render('user.html', {
-			user: results.users[0]
+			user: user
 		});
 	});
 });
 
 app.get("/", (req, res) => {
-	contribCat.getUserStatistics(req.query.days)
-		.then(contribCat.runPlugins.bind(contribCat))
-		.then((results) => {
-			res.render('index.html', {
-				users: results.users
-			});
+	return User.find({}, {"scores": 1, "name": 1, "filtered": 1, "partial": 1}, {"sort": {"scores.kudos": -1}}).lean().then((users) => {
+		res.render('index.html', {
+			users: users
+		});
 	});
 });
 

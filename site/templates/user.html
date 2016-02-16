@@ -78,7 +78,7 @@
 							{% for repo in user.strongestRepos %}
 							<li class="list-group-item">
 								<a href="{{repo.name | githubLinkBuilder}}">{{ repo.name  }}</a>
-								<span class="label label-primary">{{ repo.kudos }}</span>
+								<span class="label label-primary">{{ repo.scores.kudos }}</span>
 							</li>
 							{% endfor %}
 						</ul>
@@ -90,7 +90,7 @@
 						{% for repo in user.weakestRepos %}
 						<li class="list-group-item">
 							<a href="{{repo.name | githubLinkBuilder}}">{{ repo.name  }}</a>
-							<span class="label label-primary">{{ repo.kudos }}</span>
+							<span class="label label-primary">{{ repo.scores.kudos }}</span>
 						</li>
 						{% endfor %}
 					</div>
