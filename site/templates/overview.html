@@ -44,16 +44,20 @@
 					</tr>
 					</thead>
 					<tbody>
+					{% set rank = 0 %}
 					{% for user in users %}
+					{% if not user.filtered %}
+					{% set rank = rank + 1 %}
 					<tr>
-						<td class="rank">{{ loop.index }}</td>
+						<td class="rank">{{ rank }}</td>
 						<td class="name"><a href="/user/{{ user.name }}">{{ user.name }}</a></td>
 						<td>{{ user.scores.prCount }}</td>
 						<td>{{ user.scores.averageCommentsPerPr }}</td>
-						<td>{{ user.scores.forCount }}</td>
-						<td>{{ user.scores.againstCount }}</td>
+						<td>{{ user.scores.forUnfilteredCount }}</td>
+						<td>{{ user.scores.againstUnfilteredCount }}</td>
 						<td>{{ user.scores.kudos }} {% if user.partial %} (projected) {% endif %}</td>
 					</tr>
+					{% endif %}
 					{% endfor %}
 					</tbody>
 				</table>

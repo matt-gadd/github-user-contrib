@@ -8,10 +8,12 @@ div.panel-heading {
 	font-weight: bold;
 }
 
-.comment-list {
-	overflow-y: auto;
-	overflow-x: hidden;
-	height: 600px;
+@media (min-width: 970px) {
+	.comment-list {
+		overflow-y: auto;
+		overflow-x: hidden;
+		height: 600px;
+	}
 }
 
 .grav {
@@ -42,6 +44,11 @@ li span.repo {
 
 h3 {
 	margin-top: 0;
+}
+
+.filteredComment {
+	float: right;
+	margin: 0px 3px;
 }
 
 .kudos {
