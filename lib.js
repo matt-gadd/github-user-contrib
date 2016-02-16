@@ -45,7 +45,8 @@ module.exports = class ContribCat {
 			.then(this.saveUsers.bind(this))
 			.then(this.getUserStatistics.bind(this))
 			.then(this.runPluginsForSync.bind(this))
-			.then(this.saveUsers.bind(this));
+			.then(this.saveUsers.bind(this))
+			.then(this.saveComments.bind(this));
 	}
 
 	_fetchPullRequests(url, repo) {
@@ -240,7 +241,7 @@ module.exports = class ContribCat {
 			.populate({
 				path: 'repos.for repos.against',
 				match: { "updated_at": sinceQuery },
-				select: 'path body html_url user.login'})
+				select: 'path body html_url user.login filtered'})
 			.lean()
 			.execAsync().then((users) => {
 				return {
@@ -270,6 +271,22 @@ module.exports = class ContribCat {
 	saveUsers(users) {
 		return Promise.map(users, (user) => {
 			return User.findOneAndUpdate({"name": user.name}, user, {"upsert": true, "new": true}).execAsync().reflect();
+		}).then(() => {
+			return users;
+		});
+	}
+
+	saveComments(users) {
+		return Promise.map(users, (user) => {
+			return Promise.map(user.repos, (repo) => {
+				return Promise.map(repo.for, (comment) => {
+					return Comment.findOneAndUpdate({"_id": comment._id}, comment, {"new": true}).execAsync().reflect();
+				}).then(() => {
+					return Promise.map(repo.against, (comment) => {
+						return Comment.findOneAndUpdate({"_id": comment._id}, comment, {"new": true}).execAsync().reflect();
+					});
+				});
+			});
 		}).then(() => {
 			return users;
 		});

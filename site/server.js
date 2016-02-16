@@ -62,7 +62,7 @@ app.get("/user/:username", (req, res) => {
 		.populate({
 			path: 'repos.for repos.against',
 			match: { "updated_at": sinceQuery },
-			select: 'path body html_url user.login'})
+			select: 'path body html_url user.login filtered'})
 		.lean().then((user) => {
 		res.render('user.html', {
 			user: user

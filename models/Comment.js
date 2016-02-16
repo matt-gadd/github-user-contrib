@@ -13,6 +13,7 @@ var Comment = mongoose.model("Comment", new Schema({
 	},
 	"position": Number,
 	"line": Number,
+	"filtered": Boolean,
 	"path": String,
 	"commit_id": String,
 	"created_at": Date,
