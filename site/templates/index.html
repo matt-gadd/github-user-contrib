@@ -28,7 +28,7 @@
 		</div>
 		<div class="container">
 			<div class="row">
-				<div class="col-lg-4">
+				<div class="col-lg-3">
 					<div class="panel panel-default" id="headings">
 						<div class="panel-heading">Summary</div>
 						<div class="panel-body">
@@ -56,11 +56,11 @@
 							<li class="list-group-item excludedScoreAttribute">Average Comments Per PR
 								<span class="label label-primary">{{ user.scores.averageCommentsPerPr }}</span>
 							</li>
-							<li class="list-group-item excludedScoreAttribute">Total Comments For (filtered)
-								<span class="label label-primary">{{ user.scores.forTotalCount }} ({{ user.scores.forFilteredCount }})</span>
+							<li class="list-group-item excludedScoreAttribute">Filtered Comments For
+								<span class="label label-primary">{{ user.scores.forFilteredCount }}</span>
 							</li>
-							<li class="list-group-item excludedScoreAttribute">Total Comments Against (filtered)
-								<span class="label label-primary">{{ user.scores.againstTotalCount }} ({{ user.scores.againstFilteredCount }})</span>
+							<li class="list-group-item excludedScoreAttribute">Filtered Comments Against
+								<span class="label label-primary">{{ user.scores.againstFilteredCount }}</span>
 							</li>
 							<li class="list-group-item excludedScoreAttribute">Sentiment
 								<span class="label label-primary">{{ user.scores.sentiment }}</span>
