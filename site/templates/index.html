@@ -3,7 +3,7 @@
 <html>
 
 	<head>
-		<title>github-user-contrib</title>
+		<title>ContribCat</title>
 		<meta name="viewport" content="width=device-width">
 		<link rel="stylesheet" href="../bootstrap-theme-github/dist/css/bootstrap.css">
 		<link rel="stylesheet" href="../emojify/css/basic/emojify.min.css" />
@@ -114,8 +114,9 @@
 											<div class="panel-heading" role="tab" id="for-heading-{{ repo.name }}">
 												<h4 class="panel-title">
 													<a role="button" data-toggle="collapse" data-parent="#for-accordion" href="#for-{{ repo.name | replace("/", "-") }}" aria-controls="for-{{ repo.name }}">
-														{{ repo.name }} ({{ repo.for.length }})
+														{{ repo.name }}
 													</a>
+													<span class="repo-for-count">{{ repo.for.length }}</span>
 												</h4>
 											</div>
 											<div id="for-{{ repo.name | replace("/", "-") }}" class="panel-collapse collapse {% if loop.first %}in{% endif %}" role="tabpanel" aria-labelledby="for-heading-{{ repo.name }}">
@@ -147,8 +148,9 @@
 											<div class="panel-heading" role="tab" id="against-heading-{{ repo.name }}">
 												<h4 class="panel-title">
 													<a role="button" data-toggle="collapse" data-parent="#against-accordion" href="#against-{{ repo.name | replace("/", "-") }}" aria-controls="against-{{ repo.name }}">
-														{{ repo.name }} ({{ repo.against.length }})
+														{{ repo.name }}
 													</a>
+													<span class="repo-against-count">{{ repo.against.length }}</span>
 												</h4>
 											</div>
 											<div id="against-{{ repo.name | replace("/", "-") }}" class="panel-collapse collapse {% if loop.first %}in{% endif %}" role="tabpanel" aria-labelledby="against-heading-{{ repo.name }}">
