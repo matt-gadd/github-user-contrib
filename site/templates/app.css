@@ -42,6 +42,28 @@ li span.label {
 	padding: 6px 8px;
 }
 
+.progress {
+	margin: 10px 0;
+	height: 30px;
+	border: 1px solid #dddddd;
+}
+
+.progress-label {
+	width: 100%;
+	height: 0;
+	color: #505252;
+	margin: auto;
+	font-size: 14px;
+	font-weight: bold;
+}
+
+.progress-label-text {
+	margin: auto;
+	width: 100px;
+	text-align: center;
+	line-height: 28px;
+}
+
 .excludedScoreAttribute {
 	background-color: #f5f5f5;
 }

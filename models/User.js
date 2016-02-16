@@ -24,7 +24,8 @@ var User = mongoose.model("User", new Schema({
 		"originalKudos": Number,
 		"prCount": Number,
 		"prScore": Number,
-		"sentiment": Number
+		"sentiment": Number,
+		"percentile": Number
 	},
 	"strongestRepos": [{
 		"name": String,

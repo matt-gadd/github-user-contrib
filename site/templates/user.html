@@ -22,7 +22,7 @@
 						<span class="icon-bar"></span>
 						<span class="icon-bar"></span>
 					</button>
-					<a class="navbar-brand" href="/overview">ContribCat</a>
+					<a class="navbar-brand" href="/">ContribCat</a>
 				</div>
 			</div>
 		</div>
@@ -38,6 +38,10 @@
 							</div>
 							<div class="kudos">
 								<div class="score">{{ user.scores.kudos }}</div>
+							</div>
+							<div class="progress">
+								<div class="progress-label"><div class="progress-label-text">Top {{ 100 - user.scores.percentile }}%</div></div>
+								<div class="progress-bar progress-bar-info percentile" data-percentile="{{ user.scores.percentile}}"></div>
 							</div>
 						</div>
 						<ul class="list-group list-group-flush">
@@ -187,6 +191,8 @@
 			img_dir: "../emojify/images/basic"
 		});
 		emojify.run(document.getElementById("comments"));
+		var percentile = document.querySelector(".percentile");
+		percentile.style.width = percentile.dataset.percentile + "%"
 	</script>
 	</body>
 </html>
