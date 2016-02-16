@@ -52,21 +52,17 @@ app.set("view engine", "html");
 
 app.get("/user/:username", (req, res) => {
 	contribCat.getUserStatistics(req.query.days, req.params.username).then(contribCat.runPlugins.bind(contribCat)).then((results) => {
-		res.render('index.html', {
+		res.render('user.html', {
 			user: results.users[0]
 		});
 	});
 });
 
 app.get("/", (req, res) => {
-	res.redirect("/overview");
-});
-
-app.get("/overview", (req, res) => {
 	contribCat.getUserStatistics(req.query.days)
 		.then(contribCat.runPlugins.bind(contribCat))
 		.then((results) => {
-			res.render('overview.html', {
+			res.render('index.html', {
 				users: results.users
 			});
 	});
