@@ -43,7 +43,7 @@ module.exports = class ContribCat {
 		return this.createUsers()
 			.then(this.fetchUserDetails.bind(this))
 			.then(this.saveUsers.bind(this))
-			.then(this.getUserStatistics.bind(this, this.config.reportDays, null))
+			.then(this.getUserStatistics.bind(this))
 			.then(this.runPluginsForSync.bind(this))
 			.then(this.saveUsers.bind(this));
 	}
@@ -228,16 +228,12 @@ module.exports = class ContribCat {
 		});
 	}
 
-	getUserStatistics(days, username) {
-		var userQuery = {},
-			sinceQuery = {
-				$gt: moment().endOf("day").subtract(days || this.config.reportDays, "days").toDate()
+	getUserStatistics() {
+		var sinceQuery = {
+				$gt: moment().endOf("day").subtract(this.config.reportDays, "days").toDate()
 			};
-		if (username) {
-			userQuery.name = username.toLowerCase();
-		}
 
-		return User.find(userQuery)
+		return User.find()
 			.populate({
 				path: 'repos.prs',
 				match: { "created_at": sinceQuery }})
@@ -248,8 +244,8 @@ module.exports = class ContribCat {
 			.lean()
 			.execAsync().then((users) => {
 				return {
-					startDate: moment().endOf("day").subtract(days || this.config.reportDays, "days"),
-					reportDays: days || this.config.reportDays,
+					startDate: moment().endOf("day").subtract(this.config.reportDays, "days"),
+					reportDays: this.config.reportDays,
 					users: users
 				};
 			});
