@@ -42,6 +42,9 @@ module.exports = class ContribCat {
 	sync() {
 		return this.createUsers()
 			.then(this.fetchUserDetails.bind(this))
+			.then(this.saveUsers.bind(this))
+			.then(this.getUserStatistics.bind(this, this.config.reportDays, null))
+			.then(this.runPluginsForSync.bind(this))
 			.then(this.saveUsers.bind(this));
 	}
 
@@ -246,7 +249,7 @@ module.exports = class ContribCat {
 			.execAsync().then((users) => {
 				return {
 					startDate: moment().endOf("day").subtract(days || this.config.reportDays, "days"),
-					reportDays: this.config.reportDays,
+					reportDays: days || this.config.reportDays,
 					users: users
 				};
 			});
@@ -259,6 +262,12 @@ module.exports = class ContribCat {
 				user.details = body;
 				return user;
 			});
+		});
+	}
+
+	runPluginsForSync(results) {
+		return this.runPlugins(results).then(result => {
+			return result.users;
 		});
 	}
 

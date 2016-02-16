@@ -22,10 +22,10 @@ module.exports = function (options) {
 			};
 
 			user.repos.forEach((repo) => {
-				user.scores.kudos += repo.kudos;
-				user.scores.prScore += repo.prScore;
-				user.scores.forScore += repo.forScore;
-				user.scores.againstScore += repo.againstScore;
+				user.scores.kudos += repo.scores.kudos;
+				user.scores.prScore += repo.scores.prScore;
+				user.scores.forScore += repo.scores.forScore;
+				user.scores.againstScore += repo.scores.againstScore;
 				user.scores.prCount += repo.prs.length;
 				user.scores.forTotalCount += repo.for.length;
 				user.scores.forFilteredCount += repo.for.filter(comment => comment.filtered).length;
@@ -33,8 +33,8 @@ module.exports = function (options) {
 				user.scores.againstTotalCount += repo.against.length;
 				user.scores.againstFilteredCount += repo.against.filter(comment => comment.filtered).length;
 				user.scores.againstUnfilteredCount += repo.against.filter(comment => !comment.filtered).length;
-				user.scores.emojis += repo.emojis;
-				user.scores.sentiment += repo.sentiment;
+				user.scores.emojis += repo.scores.emojis;
+				user.scores.sentiment += repo.scores.sentiment;
 			});
 
 			let averageCommentsPerPr = user.scores.prCount === 0 ? 0 : user.scores.againstTotalCount / user.scores.prCount;

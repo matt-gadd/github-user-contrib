@@ -46,7 +46,13 @@ app.engine("html", nunjucks.render);
 app.set("view engine", "html");
 
 app.get("/user/:username", (req, res) => {
-	contribCat.getUserStatistics(req.query.days, req.params.username).then(contribCat.runPlugins.bind(contribCat)).then((results) => {
+	var promise = contribCat.getUserStatistics(req.query.days, req.params.username);
+
+	if (req.query.days) {
+		promise = promise.then(contribCat.runPlugins.bind(contribCat));
+	}
+
+	promise.then((results) => {
 		res.render('index.html', {
 			user: results.users[0]
 		});
@@ -58,12 +64,16 @@ app.get("/", (req, res) => {
 });
 
 app.get("/overview", (req, res) => {
-	contribCat.getUserStatistics(req.query.days)
-		.then(contribCat.runPlugins.bind(contribCat))
-		.then((results) => {
-			res.render('overview.html', {
-				users: results.users
-			});
+	var promise = contribCat.getUserStatistics(req.query.days, req.params.username);
+
+	if (req.query.days) {
+		promise = promise.then(contribCat.runPlugins.bind(contribCat));
+	}
+
+	promise.then((results) => {
+		res.render('overview.html', {
+			users: results.users
+		});
 	});
 });
 
