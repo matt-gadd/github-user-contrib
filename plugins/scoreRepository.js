@@ -1,7 +1,6 @@
 "use strict";
 var analyze = require('Sentimental').analyze;
 var emojify = require("emojify.js");
-var marked = require("marked");
 
 function scoreComment(previousValue, currentValue, weighting) {
 	if (currentValue.filtered) {
@@ -24,27 +23,33 @@ module.exports = function (options) {
 	return function (results) {
 		results.users.forEach(function (user) {
 			user.repos.forEach((repo) => {
-				repo.prScore = repo.prs.length * options.weighting.pr;
-				repo.sentiment = 0;
-				repo.emojis = 0;
+				repo.scores = {
+					"kudos": 0,
+					"prScore": 0,
+					"forScore": 0,
+					"againstScore": 0,
+					"averageCommentsPerPr": 0,
+					"sentiment": 0,
+					"emojis": 0
+				};
+				repo.scores.prScore = repo.prs.length * options.weighting.pr;
 
-				repo.againstScore = repo.against.reduce(scoreAgainstComment, 0);
-				repo.forScore = repo.for.reduce(scoreForComment, 0);
+				repo.scores.againstScore = repo.against.reduce(scoreAgainstComment, 0);
+				repo.scores.forScore = repo.for.reduce(scoreForComment, 0);
 
 				repo.for.forEach(function (comment) {
 					var sentiment = analyze(comment.body).score;
-					repo.sentiment += sentiment;
+					repo.scores.sentiment += sentiment;
 					emojify.replace(comment.body, function () {
-						repo.emojis += 1;
+						repo.scores.emojis += 1;
 					});
-					comment.body = marked(comment.body);
 					comment.sentiment = sentiment;
 				});
 
 				let averageCommentsPerPr = repo.prs.length === 0 ? 0 : repo.against.length / repo.prs.length;
-				repo.averageCommentsPerPr = Math.ceil(averageCommentsPerPr);
+				repo.scores.averageCommentsPerPr = Math.ceil(averageCommentsPerPr);
 
-				repo.kudos = (repo.againstScore + repo.forScore) + repo.prScore;
+				repo.scores.kudos = (repo.scores.againstScore + repo.scores.forScore) + repo.scores.prScore;
 			});
 		});
 		return results;

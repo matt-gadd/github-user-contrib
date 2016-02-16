@@ -5,7 +5,9 @@ var config = require("../config");
 var ContribCat = require("../lib");
 var mongoose = require('mongoose');
 var moment = require("moment");
+var marked = require("marked");
 var contribCat = new ContribCat(config);
+var User = require("./../models/User");
 
 var port = 9000;
 var env = nunjucks.configure("./templates", {
@@ -35,6 +37,10 @@ env.addFilter('sentimentClass', function(str) {
     return className;
 });
 
+env.addFilter("marked", function (str) {
+	return marked(str);
+});
+
 env.addFilter("formatDate", function (str) {
 	return moment(str).format('DD/MM/YYYY');
 });
@@ -46,24 +52,29 @@ app.engine("html", nunjucks.render);
 app.set("view engine", "html");
 
 app.get("/user/:username", (req, res) => {
-	contribCat.getUserStatistics(req.query.days, req.params.username).then(contribCat.runPlugins.bind(contribCat)).then((results) => {
-		res.render('index.html', {
-			user: results.users[0]
+	var sinceQuery = {
+		$gt: moment().endOf("day").subtract(config.reportDays, "days").toDate()
+	};
+
+	User.findOne({"name": req.params.username.toLowerCase()}, {"repos.prs": 0}).populate({
+			path: 'repos.prs',
+			match: { "created_at": sinceQuery }})
+		.populate({
+			path: 'repos.for repos.against',
+			match: { "updated_at": sinceQuery },
+			select: 'path body html_url user.login'})
+		.lean().then((user) => {
+		res.render('user.html', {
+			user: user
 		});
 	});
 });
 
 app.get("/", (req, res) => {
-	res.redirect("/overview");
-});
-
-app.get("/overview", (req, res) => {
-	contribCat.getUserStatistics(req.query.days)
-		.then(contribCat.runPlugins.bind(contribCat))
-		.then((results) => {
-			res.render('overview.html', {
-				users: results.users
-			});
+	return User.find({}, {"scores": 1, "name": 1, "filtered": 1, "partial": 1}, {"sort": {"scores.kudos": -1}}).lean().then((users) => {
+		res.render('index.html', {
+			users: users
+		});
 	});
 });
 
