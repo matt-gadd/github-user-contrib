@@ -21,7 +21,7 @@ module.exports = class ContribCat {
 		this.config = config;
 		this.getUserTemplate = _.template("${apiUrl}/users/${username}");
 		this.getPullsTemplate = _.template("${apiUrl}/repos/${org}/${repo}/pulls?page=${page}&per_page=${size}&state=all&base=${head}&sort=updated&direction=desc");
-		this.cutOffDate = moment().endOf("day").subtract(this.config.syncDays, "days");
+		this.cutOffDate = moment().startOf("day").subtract(this.config.syncDays, "days");
 		mongoose.connect(connectionTemplate(this.config.store), { keepAlive: 120 });
 	}
 
@@ -231,7 +231,7 @@ module.exports = class ContribCat {
 
 	getUserStatistics() {
 		var sinceQuery = {
-				$gt: moment().endOf("day").subtract(this.config.reportDays, "days").toDate()
+				$gt: moment().startOf("day").subtract(this.config.reportDays, "days").toDate()
 			};
 
 		return User.find()
@@ -245,7 +245,7 @@ module.exports = class ContribCat {
 			.lean()
 			.execAsync().then((users) => {
 				return {
-					startDate: moment().endOf("day").subtract(this.config.reportDays, "days"),
+					startDate: moment().startOf("day").subtract(this.config.reportDays, "days"),
 					reportDays: this.config.reportDays,
 					users: users
 				};

@@ -4,10 +4,10 @@ var _ = require("lodash");
 module.exports = function (results) {
 	results.users.forEach(user => {
 		user.repos.sort(function (a, b) {
-			if (a.kudos > b.kudos) {
+			if (a.scores.kudos > b.scores.kudos) {
 				return 1;
 			}
-			if (a.kudos < b.kudos) {
+			if (a.scores.kudos < b.scores.kudos) {
 				return -1;
 			}
 			return 0;
