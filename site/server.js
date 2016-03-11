@@ -8,6 +8,8 @@ var moment = require("moment");
 var marked = require("marked");
 var contribCat = new ContribCat(config);
 var User = require("./../models/User");
+var auth = require("http-auth");
+var path = require("path");
 
 var port = 9000;
 var env = nunjucks.configure("./templates", {
@@ -69,6 +71,14 @@ app.get("/user/:username", (req, res) => {
 		});
 	});
 });
+
+if (config.auth) {
+	var basic = auth.basic({
+		"realm": "Contrib Cat",
+		"file": path.join(__dirname, "users.htpasswd")
+	});
+	app.use(auth.connect(basic));
+}
 
 app.get("/", (req, res) => {
 	return User.find({}, {"scores": 1, "name": 1, "filtered": 1, "partial": 1}, {"sort": {"scores.kudos": -1}}).lean().then((users) => {

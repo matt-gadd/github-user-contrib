@@ -4,6 +4,7 @@ var consoleReporter = require("./reporters/consoleReporter");
 module.exports = {
 	apiUrl: "github_url",
 	defaultBranch: "master",
+	auth: true,
 	store: {
 		url: "localhost",
 		db: "contribcat"
