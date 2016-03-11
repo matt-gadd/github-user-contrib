@@ -41,7 +41,7 @@ module.exports = function (options) {
 			user.scores.averageCommentsPerPr = Math.ceil(averageCommentsPerPr);
 			user.scores.averageCommentsPerPrForSort = averageCommentsPerPr;
 
-			var created = moment(user.details.created_at).endOf("day");
+			var created = moment(user.details.created_at).startOf("day");
 			var after = created.isAfter(results.startDate);
 
 			if (after) {

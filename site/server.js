@@ -53,7 +53,7 @@ app.set("view engine", "html");
 
 app.get("/user/:username", (req, res) => {
 	var sinceQuery = {
-		$gt: moment().endOf("day").subtract(config.reportDays, "days").toDate()
+		$gt: moment().startOf("day").subtract(config.reportDays, "days").toDate()
 	};
 
 	User.findOne({"name": req.params.username.toLowerCase()}, {"repos.prs": 0}).populate({
