@@ -4,3 +4,5 @@ config.js
 *.bak
 cache
 .idea
+users.htpasswd
+
